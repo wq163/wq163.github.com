@@ -9,8 +9,9 @@
   <meta name="author" content="jenwang">
 
   
-  <meta name="description" content="需求:
-比如要自定义本地maven库的路径，又不想在project.clj中定义，因为每个人的本地路径不同，写在工程中不好。那么在profiles.clj中定义比较好： {:user {:local-repo "D:\\m2\\repository"}} 当庆幸找到解决方法时， &hellip;">
+  <meta name="description" content="这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。
+下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
+（以便新人参考和自己回顾） 初步的现象 业务系统消费MQ中消息速度变慢，积压了200多万条消息， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -80,6 +81,90 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-25T21:33:00+08:00" pubdate data-updated="true">Jul 25<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。<br/>
+下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
+<em>（以便新人参考和自己回顾）</em></p>
+
+<h2>初步的现象</h2>
+
+<p>业务系统消费MQ中消息速度变慢，积压了200多万条消息，通过jstat观察到业务系统fullgc比较频繁,到最后干脆OOM了：<br/>
+<img src="/static/gc.png" alt="" /></p>
+
+<h2>进一步分析</h2>
+
+<p> <strong>既然知道了内存使用存在问题，那么就要知道是哪些对象占用了大量内存.</strong><br/>
+很多人都会想到把堆dump下来再用MAT等工具进行分析，但dump堆要花较长的时间，并且文件巨大，再从服务器上拖回本地导入工具，这个过程太折腾不到万不得已最好别这么干。</p>
+
+<p>可以用更轻量级的在线分析，用jmap查看存活的对象情况（jmap -histo:live [pid]），可以看出HashTable中的元素有5000多万，占用内存大约1.5G的样子：<br/>
+<img src="/static/jmap.png" alt="" /></p>
+
+<h2>定位到代码</h2>
+
+<p><strong>现在已经知道了是HashTable的问题，那么就要定位出什么代码引起的</strong></p>
+
+<p>接下来自然要看看是什么代码往HashTable里疯狂的put数据，于是用神器btrace跟踪Hashtable.put调用的堆栈。<br/>
+首先写btrace脚本TracingHashTable.java：</p>
+
+<pre><code>import com.sun.btrace.annotations.*;
+import static com.sun.btrace.BTraceUtils.*;
+
+@BTrace
+public class TracingHashTable {
+        /*指明要查看的方法，类*/
+        @OnMethod(
+            clazz="java.util.Hashtable",
+            method="put",
+            location=@Location(Kind.RETURN))
+        public static void traceExecute(@Self java.util.Hashtable object){
+                println("调用堆栈！！");
+                jstack();
+        }
+}
+</code></pre>
+
+<p>然后运行：
+bin/btrace -cp build 4947 TracingHashTable.java  <br/>
+看到有大量类似下图的调用堆栈<br/>
+<img src="/static/btrace.png" alt="" /></p>
+
+<p>可以看出是在接收到消息后查询入库的代码造成的，业务方法调用ibatis再到mysql jdbc驱动执行statement时put了大量的属性到HashTable中。</p>
+
+<p>通过以上排查已基本定位了由那块代码引起的，接下来就是打开代码工程进行白盒化改造了，对相应代码进行优化（不在本文范围内了。几个图中的pid不一致就别纠结了，有些是系统重启过再截图的）.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1021,42 +1106,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-juc-CyclicBarrier/">JUC代码浅析[6]——基于AQS的CyclicBarrier</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-04-14T20:46:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/static/old-blog/juc-CyclicBarrier.jpg" alt="" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1085,6 +1134,10 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a>
       </li>
     
@@ -1100,10 +1153,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
         <a href="/blog/2013/02/04/jenkins-caliper/">Jenkins集成caliper</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2013/01/23/how-to-octopress/">How-to-octopress</a>
-      </li>
-    
   </ul>
 </section>
 <section>
@@ -1112,7 +1161,7 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
  <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
 <li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
 <li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
-<li class='category'><a href='/blog/categories/java技术/'>java技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/java技术/'>java技术 (2)</a></li>
 <li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
 <li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
 <li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>
