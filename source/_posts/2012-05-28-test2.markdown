@@ -1,0 +1,8 @@
+---
+layout: post
+title: "test2"
+date: 2012-05-28 20:39
+comments: true
+categories: [c1,c2]
+---
+test test !!!

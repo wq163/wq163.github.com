@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: c2 | JenWang's blog]]></title>
+  <link href="http://wq163.github.io/blog/categories/c2/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2013-07-22T11:56:07+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[test2]]></title>
+    <link href="http://wq163.github.io/blog/2012/05/28/test2/"/>
+    <updated>2012-05-28T20:39:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2012/05/28/test2</id>
+    <content type="html"><![CDATA[<p>test test !!!</p>
+]]></content>
+  </entry>
+  
+</feed>

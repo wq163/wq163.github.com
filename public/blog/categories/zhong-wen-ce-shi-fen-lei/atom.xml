@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 中文测试分类 | JenWang's blog]]></title>
+  <link href="http://wq163.github.io/blog/categories/zhong-wen-ce-shi-fen-lei/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2013-07-22T11:56:07+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[第一次使用,中文问题的解决办法]]></title>
+    <link href="http://wq163.github.io/blog/2012/05/25/first-test-post/"/>
+    <updated>2012-05-25T23:05:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2012/05/25/first-test-post</id>
+    <content type="html"><![CDATA[<p>文章内容和分类中有中文比较麻烦，网上找了很多方法都不管用,我在windows7下cywin的解决办法是：</p>
+
+<ol>
+<li>把文章的makedown文件保存成为无BOM的utf-8格式。</li>
+<li>控制台或脚本中在rake generate命令后加上export LC_ALL=zh_CN.UTF-8和export LANG=zh_CN.UTF-8</li>
+</ol>
+
+
+<p>两步骤缺一不可</p>
+]]></content>
+  </entry>
+  
+</feed>

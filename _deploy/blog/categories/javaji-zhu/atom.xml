@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: java技术 | JenWang's blog]]></title>
+  <link href="http://wq163.github.io/blog/categories/javaji-zhu/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2013-07-22T11:56:07+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[避免jar依赖冲突的一种办法]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/12/solution-of-dependency-conflicts/"/>
+    <updated>2013-07-12T14:21:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/12/solution-of-dependency-conflicts</id>
+    <content type="html"><![CDATA[<p>  java中的依赖冲突问题一直比较头疼，特别是做公用包给其他系统用的时候，现在都不敢引入太多的依赖，基本上每次都要帮别人解决依赖冲突的问题，非常麻烦。</p>
+
+<p>  特别是碰到一些老系统还不是用maven管理的，人家用你的一个功能还要拷一堆jar包过去，然后排出哪些包在系统中已经有了，版本是否兼容等问题，非常蛋疼。为了方便人家使用就想把所有依赖打成一个jar包提供出去，但这样潜在的依赖冲突问题就会更严重，以后出现冲突时都不知道哪个jar包含了冲突的类。</p>
+
+<p>  更不想引入OSGi这种重量级的东西来隔离依赖。</p>
+
+<h2>一种解决方法</h2>
+
+<p>  尝试了多种途径后，发现还是用maven-shade-plugin的relocation方式比较能够满足需要，对于提供基础类库的场景下比较友好。</p>
+
+<p>  原理就是可能把依赖的class重命名包路径，并打包到一个jar中。maven-shade-plugin主要帮我们做了三件事情：</p>
+
+<ul>
+<li>把依赖的class重新放到指定的包下；</li>
+<li>改写相关class的字节码，对应于重定义的包路径；</li>
+<li>把相关依赖的class打进一个jar包；</li>
+</ul>
+
+
+<p>  这样我们对外提供一个jar包就可以了，显得非常干净，依赖的类被定义到指定的包路径中（比如以当前项目路径为前缀），可以避免跟使用者系统的包冲突。</p>
+
+<p>  有时候我们并不希望把所有的依赖都打到一个包中，只想把一部分容易引起冲突的依赖重定义包路径后包含进来，幸运的是maven-shade-plugin很容易做到，并且会把要发布到maven库的pom.xml中的依赖关系都自动改写掉。（通过配置artifactSet中的include和exclude来指定要包含和排除的依赖）</p>
+
+<h2>简单例子</h2>
+
+<p>比如我们有这么一个需求：</p>
+
+<ul>
+<li>假设commons-collections这个包非常容易跟其他系统引起冲突，我们想把它重定义路径后包含到主jar包中；</li>
+<li>假设我们认为mapdb这个类库一般不会跟别人冲突，不想把它打进主jar包里;</li>
+</ul>
+
+
+<p>  在pom.xml中定义plugin:</p>
+
+<pre><code>    &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.1&lt;/version&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;phase&gt;package&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;shade&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;shadedArtifactAttached&gt;false&lt;/shadedArtifactAttached&gt;
+                        &lt;!--&lt;shadedClassifierName&gt;standalone&lt;/shadedClassifierName&gt;--&gt;
+                        &lt;!--&lt;createDependencyReducedPom&gt;true&lt;/createDependencyReducedPom&gt;--&gt;
+                        &lt;!--&lt;shadedArtifactId&gt;jconvert-pinyin-standalone&lt;/shadedArtifactId&gt;--&gt;
+                        &lt;!--&lt;shadeSourcesContent&gt;true&lt;/shadeSourcesContent&gt;--&gt;
+                        &lt;createSourcesJar&gt;true&lt;/createSourcesJar&gt;
+                        &lt;artifactSet&gt;
+                            &lt;excludes&gt;
+                                &lt;exclude&gt;org.mapdb:*&lt;/exclude&gt;
+                            &lt;/excludes&gt;
+                        &lt;/artifactSet&gt;
+                        &lt;relocations&gt;
+                            &lt;relocation&gt;
+                                &lt;pattern&gt;org.apache.commons.collections&lt;/pattern&gt;
+                                &lt;shadedPattern&gt;com.mycompany.myproject.org.apache.commons.collections&lt;/shadedPattern&gt;
+                            &lt;/relocation&gt;
+                        &lt;/relocations&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+    &lt;/plugin&gt;
+</code></pre>
+
+<p>其中shadedArtifactAttached设为false,表示把shade过的jar作为项目默认的包（发布到maven库时也是shade后的包,发布上去的pom也是改写过的）。如果设为true,则默认的包还是不变,会生成一个独立的shade后的包(这样可以提供2种格式的包,比如让maven工程用户依赖普通的包,非maven用户使用shade过的包)。<br/>
+<em>其他详细的参数设置参考 <a href="http://maven.apache.org/plugins/maven-shade-plugin/">maven-shade-plugin官网</a> :</em></p>
+
+<h2>潜在的问题</h2>
+
+<p>如果第三方包中有反射相关的代码，则shade后可能出现不能正常工作，所以要仔细检查确保不会出现问题</p>
+]]></content>
+  </entry>
+  
+</feed>
