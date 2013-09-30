@@ -9,9 +9,7 @@
   <meta name="author" content="jenwang">
 
   
-  <meta name="description" content="这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。
-下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
-（以便新人参考和自己回顾） 初步的现象 业务系统消费MQ中消息速度变慢，积压了200多万条消息， &hellip;">
+  <meta name="description" content="java序列化trick and trap 厂内经常出现序列化对象版本不匹配问题，于是发本文说明一些序列化的注意点 调用MQ、memcached、rpc等等涉及到远程通讯的都会经过序列化，虽然客户端透明的封装了细节，但底层是一定会有序列化操作的。因此了解序列化的注意事项是非常有必要的， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +79,102 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-30T11:24:00+08:00" pubdate data-updated="true">Sep 30<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>java序列化trick and trap</h2>
+
+<p>厂内经常出现序列化对象版本不匹配问题，于是发本文说明一些序列化的注意点</p>
+
+<p><em>调用MQ、memcached、rpc等等涉及到远程通讯的都会经过序列化，虽然客户端透明的封装了细节，但底层是一定会有序列化操作的。因此了解序列化的注意事项是非常有必要的，可以避免误用导致潜在的风险</em></p>
+
+<ul>
+<li><p>通过网络传输的对象，必须实现Serializable接口，或者父类已经实现序列化接口。</p></li>
+<li><p>网络传输对象继承层次不宜过深，封装在内部的对象也不宜太复杂。（太复杂很容易出现某个相关的类没实现序列化接口，而导致整个对象无法序列化）</p>
+
+<ul>
+<li>一般long/int/String/Map/List/Array等常见类组成的对象就
+能解决问题</li>
+<li>最好不要在本应用对外的业务接口中传递或返回另一人或系统主导业务对象。因为你不能保证别人的对象版本会兼容，从而导致错误扩散</li>
+</ul>
+</li>
+<li><p>在接口定义上用的是父类，实际远程传输过去的是子类，反序列化不了的。特别是在rpc中客户端容易出现此问题</p></li>
+<li><p>远程接口上的参数、返回值类型、会抛出的异常类，都要实现序列化接口。并且server和client都要有对应的类。</p>
+
+<ul>
+<li>一个比较容易忽略的例子是:某服务接口可能会抛出某个运行时异常，但没有把这个异常类放入客户端中，一旦抛出此异常，客户端接收到此异常就会无法反序列化</li>
+</ul>
+</li>
+<li><p>ArrayList.subList()返回的List实现类是内部类型，不能序列化的，通过网络传输会出错。</p></li>
+<li><p>ArrayList经过网络传输后，里面的元素顺序可能不一样</p></li>
+<li><p>网络传输对象要有无参构造器（如果定义了有参构造器那就要显式定义一个无参构造起），因为机器是不知道传什么内容给有参构造器进行实例化，无参构造器不是public都没关系。没定义无参构造器，有些序列化方式会在底下生成无参构造器的方式才能解决问题。</p></li>
+<li><p>网络传输最好不要用enum类型，太强耦合，从网络一端传到另一端，对方可能还是旧版本而识别不了。</p>
+
+<ul>
+<li>Enum 常量的序列化不同于普通的 serializable 或 externalizable 对象。enum 常量的序列化形式只包含其名称；常量的字段值不被传送。为了序列化 enum 常量，ObjectOutputStream 需要写入由常量的名称方法返回的字符串。</li>
+</ul>
+</li>
+<li><p>不需通过网络传输的field用transient定义，但有些json序列化类库是不会区别对待这种field</p></li>
+<li><p>有些序列化类库，遇到反序列化不了的类，会反序列化成Map，但会在使用时遇到class cast异常。</p></li>
+<li><p>同一应用不要有同package同名的类，可能隐藏在同名/不同名/不同版本的jar中。</p></li>
+<li><p>，</p></li>
+</ul>
+
+
+<h2>serialVersionUID</h2>
+
+<ul>
+<li><p><font color="red">用于网络传输的对象，第一次上线使用时，就一定要设定serialVersionUID，不要不顾编译警告</font></p>
+
+<ul>
+<li><p>NOTE: 网络对象的匹配，除了靠类名，还靠serialVersionUID，serialVersionUID在《Java语言规范》有固定算法，<u><strong>跟各field的定义相关，如果没有显式赋值，虽然看不见，但会底下会默认算出一个进行网络传输。</strong></u></p></li>
+<li><p><font color="red">如果没有显式赋值，在看不见觉察不到的情况下，在你增减了field/修改了定义的情况下，serialVersionUID已被改变，这时网络两端就对接不上而悲剧了。<br/>
+没定义serialVersionUID，而又发生了serialVersionUID变化，网络两端只有所有机器都停掉，并且先后起有顺序时，才能不出丝毫差错。</font></p></li>
+</ul>
+</li>
+<li><p>最好不要用用1L作为serialVersionUID。0L对于java enum的序列化有特殊意义。</p></li>
+<li><p>没赋值serialVersionUID 只是警告，不是错误，造成没设定serialVersionUID，网络两端上线运行一段时间也感觉正常。如果再增减修改field，没赋值好serialVersionUID，网络两端就不匹配。</p>
+
+<ul>
+<li>算出旧版本的serialVersionUID（使用serialver或eclipse），设置到新版本的代码中</li>
+</ul>
+</li>
+</ul>
+
+
+<p><em>本文大部分内容取自前同事的分享资料，作了少许修改，<a href="http://lokki.iteye.com/blog/1134482">外网地址</a></em></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1070,42 +1164,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-mrunit1/">hadoop单元测试方法&#8211;使用和增强MRUnit[1]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-04-14T20:47:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/static/old-blog/mrunit1.jpg" alt="" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1134,6 +1192,10 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a>
       </li>
     
@@ -1149,10 +1211,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
         <a href="/blog/2013/07/12/solution-of-dependency-conflicts/">避免jar依赖冲突的一种办法</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2013/02/04/jenkins-caliper/">Jenkins集成caliper</a>
-      </li>
-    
   </ul>
 </section>
 <section>
@@ -1161,10 +1219,11 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
  <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
 <li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
 <li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
-<li class='category'><a href='/blog/categories/java技术/'>java技术 (2)</a></li>
+<li class='category'><a href='/blog/categories/java技术/'>java技术 (3)</a></li>
 <li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
 <li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
 <li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>
+<li class='category'><a href='/blog/categories/故障排查/'>故障排查 (1)</a></li>
 
  </ul>
 </section>

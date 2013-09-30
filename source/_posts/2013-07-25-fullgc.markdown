@@ -3,7 +3,7 @@ layout: post
 title: "一个java内存泄漏的排查案例"
 date: 2013-07-25 21:33
 comments: true
-categories: [java技术]
+categories: [java技术,故障排查]
 ---
 
 
