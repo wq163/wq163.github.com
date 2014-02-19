@@ -4,7 +4,7 @@
         <description><![CDATA[JenWang's blog]]></description>
         <title><![CDATA[JenWang's blog]]></title>
         <link>http://wq163.github.io/</link>
-        <pubDate>2013-09-30T14:32:41+08:00</pubDate>
+        <pubDate>2014-02-19T16:42:26+08:00</pubDate>
 
         
         <item>
@@ -23,7 +23,7 @@
 <ul>
 <li>一般long/int/String/Map/List/Array等常见类组成的对象就
 能解决问题</li>
-<li>最好不要在本应用对外的业务接口中传递或返回另一人或系统主导业务对象。因为你不能保证别人的对象版本会兼容，从而导致错误扩散</li>
+<li>最好不要在本应用对外的业务接口中传递或返回“由另一人或系统主导的业务对象&#8221;。因为你不能保证别人的对象版本会兼容，从而导致错误扩散</li>
 </ul>
 </li>
 <li><p>在接口定义上用的是父类，实际远程传输过去的是子类，反序列化不了的。特别是在rpc中客户端容易出现此问题</p></li>
@@ -45,7 +45,6 @@
 <li><p>不需通过网络传输的field用transient定义，但有些json序列化类库是不会区别对待这种field</p></li>
 <li><p>有些序列化类库，遇到反序列化不了的类，会反序列化成Map，但会在使用时遇到class cast异常。</p></li>
 <li><p>同一应用不要有同package同名的类，可能隐藏在同名/不同名/不同版本的jar中。</p></li>
-<li><p>，</p></li>
 </ul>
 
 

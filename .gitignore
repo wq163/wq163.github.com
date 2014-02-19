@@ -1,0 +1,6 @@
+.DS_Store
+target/
+.svn/
+*.swp
+*.iml
+quick_git_push.sh
