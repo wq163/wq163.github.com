@@ -9,7 +9,7 @@
   <meta name="author" content="jenwang">
 
   
-  <meta name="description" content="java序列化trick and trap 厂内经常出现序列化对象版本不匹配问题，于是发本文说明一些序列化的注意点 调用MQ、memcached、rpc等等涉及到远程通讯的都会经过序列化，虽然客户端透明的封装了细节，但底层是一定会有序列化操作的。因此了解序列化的注意事项是非常有必要的， &hellip;">
+  <meta name="description" content="经常碰到这种事情: 在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事. 下面给出一个便捷的办法: &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,87 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-27T17:50:00+08:00" pubdate data-updated="true">Mar 27<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong> 经常碰到这种事情: </strong></p>
+
+<p>在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事.</p>
+
+<p><strong> 下面给出一个便捷的办法: </strong></p>
+
+<p>创建一个新目录里面建一个maven pom文件, 添加需要依赖的类库:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?xml version="1.0"?&gt;
+</span><span class='line'>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+</span><span class='line'>    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+</span><span class='line'>    &lt;groupId&gt;com.dep.download&lt;/groupId&gt;
+</span><span class='line'>    &lt;artifactId&gt;dep-download&lt;/artifactId&gt;
+</span><span class='line'>    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+</span><span class='line'> 
+</span><span class='line'>    &lt;dependencies&gt;
+</span><span class='line'>        &lt;dependency&gt;
+</span><span class='line'>            &lt;groupId&gt;com.xx.xxx&lt;/groupId&gt;
+</span><span class='line'>            &lt;artifactId&gt;yy-yyy&lt;/artifactId&gt;
+</span><span class='line'>            &lt;version&gt;x.y.z&lt;/version&gt;
+</span><span class='line'>            &lt;scope/&gt;
+</span><span class='line'>        &lt;/dependency&gt;
+</span><span class='line'>    &lt;/dependencies&gt;
+</span><span class='line'>&lt;/project&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在这个目录下运行命令:<br/>
+<code>mvn -f download-dep-pom.xml dependency:copy-dependencies</code></p>
+
+<p>所有跟这个类库相关的直接和间接依赖的jar包都会下载到 ./target/dependency/下</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1127,42 +1208,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-mrunit2/">hadoop单元测试方法&#8211;使用和增强MRUnit[2]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-04-14T20:48:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/static/old-blog/mrunit2.jpg" alt="" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1191,6 +1236,10 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a>
       </li>
     
@@ -1206,10 +1255,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
         <a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2013/07/12/solution-of-dependency-conflicts/">避免jar依赖冲突的一种办法</a>
-      </li>
-    
   </ul>
 </section>
 <section>
@@ -1218,7 +1263,7 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
  <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
 <li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
 <li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
-<li class='category'><a href='/blog/categories/java技术/'>java技术 (3)</a></li>
+<li class='category'><a href='/blog/categories/java技术/'>java技术 (4)</a></li>
 <li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
 <li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
 <li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>

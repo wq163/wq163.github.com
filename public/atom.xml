@@ -4,7 +4,7 @@
   <title><![CDATA[JenWang's blog]]></title>
   <link href="http://wq163.github.io/atom.xml" rel="self"/>
   <link href="http://wq163.github.io/"/>
-  <updated>2014-02-19T16:42:26+08:00</updated>
+  <updated>2014-03-27T17:52:19+08:00</updated>
   <id>http://wq163.github.io/</id>
   <author>
     <name><![CDATA[jenwang]]></name>
@@ -12,6 +12,60 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[如何一次性下载某个类库依赖的所有jar包]]></title>
+    <link href="http://wq163.github.io/blog/2014/03/27/mvn-depencies-download/"/>
+    <updated>2014-03-27T17:50:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2014/03/27/mvn-depencies-download</id>
+    <content type="html"><![CDATA[<p><strong> 经常碰到这种事情: </strong></p>
+
+<p>在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事.</p>
+
+<p><strong> 下面给出一个便捷的办法: </strong></p>
+
+<p>创建一个新目录里面建一个maven pom文件, 添加需要依赖的类库:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?xml version="1.0"?&gt;
+</span><span class='line'>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+</span><span class='line'>    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+</span><span class='line'>    &lt;groupId&gt;com.dep.download&lt;/groupId&gt;
+</span><span class='line'>    &lt;artifactId&gt;dep-download&lt;/artifactId&gt;
+</span><span class='line'>    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+</span><span class='line'> 
+</span><span class='line'>    &lt;dependencies&gt;
+</span><span class='line'>        &lt;dependency&gt;
+</span><span class='line'>            &lt;groupId&gt;com.xx.xxx&lt;/groupId&gt;
+</span><span class='line'>            &lt;artifactId&gt;yy-yyy&lt;/artifactId&gt;
+</span><span class='line'>            &lt;version&gt;x.y.z&lt;/version&gt;
+</span><span class='line'>            &lt;scope/&gt;
+</span><span class='line'>        &lt;/dependency&gt;
+</span><span class='line'>    &lt;/dependencies&gt;
+</span><span class='line'>&lt;/project&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在这个目录下运行命令:<br/>
+<code>mvn -f download-dep-pom.xml dependency:copy-dependencies</code></p>
+
+<p>所有跟这个类库相关的直接和间接依赖的jar包都会下载到 ./target/dependency/下</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[关于serialVersionUID与序列化]]></title>
@@ -724,15 +778,6 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
     <updated>2011-04-14T20:42:00+08:00</updated>
     <id>http://wq163.github.io/blog/2011/04/14/oldblog-juc-Semaphore</id>
     <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/juc-Semaphore.jpg" alt="" /></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[JUC代码浅析[3]——基于AQS的锁ReentrantReadWriteLock]]></title>
-    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-juc-ReentrantReadWriteLock/"/>
-    <updated>2011-04-14T20:41:00+08:00</updated>
-    <id>http://wq163.github.io/blog/2011/04/14/oldblog-juc-ReentrantReadWriteLock</id>
-    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/juc-ReentrantReadWriteLock.jpg" alt="" /></p>
 ]]></content>
   </entry>
   
