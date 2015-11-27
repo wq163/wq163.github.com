@@ -1,1 +1,1332 @@
-My Octopress Page is coming soon &hellip;
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>JenWang's blog</title>
+  <meta name="author" content="jenwang">
+
+  
+  <meta name="description" content="经常碰到这种事情: 在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事. 下面给出一个便捷的办法: &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://wq163.github.io">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="JenWang's blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="javascripts/libs/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32197227-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">JenWang's blog</a></h1>
+  
+    <h2>据说界面一定要丑陋.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss email">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+    <li><a href="wq163@163.com" rel="subscribe-email" title="subscribe via email">Email</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:wq163.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-27T17:50:00+08:00" pubdate data-updated="true">Mar 27<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong> 经常碰到这种事情: </strong></p>
+
+<p>在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事.</p>
+
+<p><strong> 下面给出一个便捷的办法: </strong></p>
+
+<p>创建一个新目录里面建一个maven pom文件, 添加需要依赖的类库:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?xml version="1.0"?&gt;
+</span><span class='line'>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+</span><span class='line'>    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+</span><span class='line'>    &lt;groupId&gt;com.dep.download&lt;/groupId&gt;
+</span><span class='line'>    &lt;artifactId&gt;dep-download&lt;/artifactId&gt;
+</span><span class='line'>    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+</span><span class='line'> 
+</span><span class='line'>    &lt;dependencies&gt;
+</span><span class='line'>        &lt;dependency&gt;
+</span><span class='line'>            &lt;groupId&gt;com.xx.xxx&lt;/groupId&gt;
+</span><span class='line'>            &lt;artifactId&gt;yy-yyy&lt;/artifactId&gt;
+</span><span class='line'>            &lt;version&gt;x.y.z&lt;/version&gt;
+</span><span class='line'>            &lt;scope/&gt;
+</span><span class='line'>        &lt;/dependency&gt;
+</span><span class='line'>    &lt;/dependencies&gt;
+</span><span class='line'>&lt;/project&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在这个目录下运行命令:<br/>
+<code>mvn -f download-dep-pom.xml dependency:copy-dependencies</code></p>
+
+<p>所有跟这个类库相关的直接和间接依赖的jar包都会下载到 ./target/dependency/下</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-30T11:24:00+08:00" pubdate data-updated="true">Sep 30<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>java序列化trick and trap</h2>
+
+<p>厂内经常出现序列化对象版本不匹配问题，于是发本文说明一些序列化的注意点</p>
+
+<p><em>调用MQ、memcached、rpc等等涉及到远程通讯的都会经过序列化，虽然客户端透明的封装了细节，但底层是一定会有序列化操作的。因此了解序列化的注意事项是非常有必要的，可以避免误用导致潜在的风险</em></p>
+
+<ul>
+<li><p>通过网络传输的对象，必须实现Serializable接口，或者父类已经实现序列化接口。</p></li>
+<li><p>网络传输对象继承层次不宜过深，封装在内部的对象也不宜太复杂。（太复杂很容易出现某个相关的类没实现序列化接口，而导致整个对象无法序列化）</p>
+
+<ul>
+<li>一般long/int/String/Map/List/Array等常见类组成的对象就
+能解决问题</li>
+<li>最好不要在本应用对外的业务接口中传递或返回“由另一人或系统主导的业务对象&#8221;。因为你不能保证别人的对象版本会兼容，从而导致错误扩散</li>
+</ul>
+</li>
+<li><p>在接口定义上用的是父类，实际远程传输过去的是子类，反序列化不了的。特别是在rpc中客户端容易出现此问题</p></li>
+<li><p>远程接口上的参数、返回值类型、会抛出的异常类，都要实现序列化接口。并且server和client都要有对应的类。</p>
+
+<ul>
+<li>一个比较容易忽略的例子是:某服务接口可能会抛出某个运行时异常，但没有把这个异常类放入客户端中，一旦抛出此异常，客户端接收到此异常就会无法反序列化</li>
+</ul>
+</li>
+<li><p>ArrayList.subList()返回的List实现类是内部类型，不能序列化的，通过网络传输会出错。</p></li>
+<li><p>ArrayList经过网络传输后，里面的元素顺序可能不一样</p></li>
+<li><p>网络传输对象要有无参构造器（如果定义了有参构造器那就要显式定义一个无参构造起），因为机器是不知道传什么内容给有参构造器进行实例化，无参构造器不是public都没关系。没定义无参构造器，有些序列化方式会在底下生成无参构造器的方式才能解决问题。</p></li>
+<li><p>网络传输最好不要用enum类型，太强耦合，从网络一端传到另一端，对方可能还是旧版本而识别不了。</p>
+
+<ul>
+<li>Enum 常量的序列化不同于普通的 serializable 或 externalizable 对象。enum 常量的序列化形式只包含其名称；常量的字段值不被传送。为了序列化 enum 常量，ObjectOutputStream 需要写入由常量的名称方法返回的字符串。</li>
+</ul>
+</li>
+<li><p>不需通过网络传输的field用transient定义，但有些json序列化类库是不会区别对待这种field</p></li>
+<li><p>有些序列化类库，遇到反序列化不了的类，会反序列化成Map，但会在使用时遇到class cast异常。</p></li>
+<li><p>同一应用不要有同package同名的类，可能隐藏在同名/不同名/不同版本的jar中。</p></li>
+</ul>
+
+
+<h2>serialVersionUID</h2>
+
+<ul>
+<li><p><font color="red">用于网络传输的对象，第一次上线使用时，就一定要设定serialVersionUID，不要不顾编译警告</font></p>
+
+<ul>
+<li><p>NOTE: 网络对象的匹配，除了靠类名，还靠serialVersionUID，serialVersionUID在《Java语言规范》有固定算法，<u><strong>跟各field的定义相关，如果没有显式赋值，虽然看不见，但会底下会默认算出一个进行网络传输。</strong></u></p></li>
+<li><p><font color="red">如果没有显式赋值，在看不见觉察不到的情况下，在你增减了field/修改了定义的情况下，serialVersionUID已被改变，这时网络两端就对接不上而悲剧了。<br/>
+没定义serialVersionUID，而又发生了serialVersionUID变化，网络两端只有所有机器都停掉，并且先后起有顺序时，才能不出丝毫差错。</font></p></li>
+</ul>
+</li>
+<li><p>最好不要用用1L作为serialVersionUID。0L对于java enum的序列化有特殊意义。</p></li>
+<li><p>没赋值serialVersionUID 只是警告，不是错误，造成没设定serialVersionUID，网络两端上线运行一段时间也感觉正常。如果再增减修改field，没赋值好serialVersionUID，网络两端就不匹配。</p>
+
+<ul>
+<li>算出旧版本的serialVersionUID（使用serialver或eclipse），设置到新版本的代码中</li>
+</ul>
+</li>
+</ul>
+
+
+<p><em>本文大部分内容取自前同事的分享资料，作了少许修改，<a href="http://lokki.iteye.com/blog/1134482">外网地址</a></em></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-25T21:33:00+08:00" pubdate data-updated="true">Jul 25<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。<br/>
+下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
+<em>（以便新人参考和自己回顾）</em></p>
+
+<h2>初步的现象</h2>
+
+<p>业务系统消费MQ中消息速度变慢，积压了200多万条消息，通过jstat观察到业务系统fullgc比较频繁,到最后干脆OOM了：<br/>
+<img src="/static/gc.png" alt="" /></p>
+
+<h2>进一步分析</h2>
+
+<p> <strong>既然知道了内存使用存在问题，那么就要知道是哪些对象占用了大量内存.</strong><br/>
+很多人都会想到把堆dump下来再用MAT等工具进行分析，但dump堆要花较长的时间，并且文件巨大，再从服务器上拖回本地导入工具，这个过程太折腾不到万不得已最好别这么干。</p>
+
+<p>可以用更轻量级的在线分析，用jmap查看存活的对象情况（jmap -histo:live [pid]），可以看出HashTable中的元素有5000多万，占用内存大约1.5G的样子：<br/>
+<img src="/static/jmap.png" alt="" /></p>
+
+<h2>定位到代码</h2>
+
+<p><strong>现在已经知道了是HashTable的问题，那么就要定位出什么代码引起的</strong></p>
+
+<p>接下来自然要看看是什么代码往HashTable里疯狂的put数据，于是用神器btrace跟踪Hashtable.put调用的堆栈。<br/>
+首先写btrace脚本TracingHashTable.java：</p>
+
+<pre><code>import com.sun.btrace.annotations.*;
+import static com.sun.btrace.BTraceUtils.*;
+
+@BTrace
+public class TracingHashTable {
+        /*指明要查看的方法，类*/
+        @OnMethod(
+            clazz="java.util.Hashtable",
+            method="put",
+            location=@Location(Kind.RETURN))
+        public static void traceExecute(@Self java.util.Hashtable object){
+                println("调用堆栈！！");
+                jstack();
+        }
+}
+</code></pre>
+
+<p>然后运行：
+bin/btrace -cp build 4947 TracingHashTable.java  <br/>
+看到有大量类似下图的调用堆栈<br/>
+<img src="/static/btrace.png" alt="" /></p>
+
+<p>可以看出是在接收到消息后查询入库的代码造成的，业务方法调用ibatis再到mysql jdbc驱动执行statement时put了大量的属性到HashTable中。</p>
+
+<p>通过以上排查已基本定位了由那块代码引起的，接下来就是打开代码工程进行白盒化改造了，对相应代码进行优化（不在本文范围内了。几个图中的pid不一致就别纠结了，有些是系统重启过再截图的）.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-16T18:54:00+08:00" pubdate data-updated="true">Jul 16<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>需求:<br/>
+比如要自定义本地maven库的路径，又不想在project.clj中定义，因为每个人的本地路径不同，写在工程中不好。那么在profiles.clj中定义比较好：</p>
+
+<pre><code>{:user {:local-repo "D:\\m2\\repository"}}
+</code></pre>
+
+<p>当庆幸找到解决方法时，一运行发现根本没生效是件很扫兴的事。
+网上能找到的资料都告诉你profiles.clj这个文件是放在~/.lein/这个目录下的。</p>
+
+<p><strong>实际情况是：</strong>
+<code>如果自定义了LEIN_HOME的路径，那么profiles.clj就应该放在LEIN_HOME目录下，而不是~/.lein/下</code><br/>
+否则不会生效，切记。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-12T15:51:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>大家知道单元测试对代码质量的保障作用已经没什么可说的了。Microbenchmark（微基准测试）也是保证代码质量的重要手段，也是容易忽略的，它用来衡量一些小的代码片段的性能指标，完善的Microbenchmark可以便于定位出一些性能瓶颈,它类似于单元测试,能够进行持续集成,当代码有改动时能够通过持续集成的历史数据 看出对性能的影响点。</p>
+
+<p>之前使用Google的Caliper，但目前还在重度开发中，每个版本API变化比较大，还有好些地方不够稳定，所以暂时放弃使用。</p>
+
+<h2><a href="http://labs.carrotsearch.com/junit-benchmarks.html">JUnitBenchmark</a></h2>
+
+<p>这里先重点介绍一下JUnitBenchmark的实践，它使用简单，有直观的图表。</p>
+
+<h3>例子：</h3>
+
+<p>添加依赖：</p>
+
+<pre><code>   &lt;dependency&gt;
+        &lt;groupId&gt;com.carrotsearch&lt;/groupId&gt;
+        &lt;artifactId&gt;junit-benchmarks&lt;/artifactId&gt;
+        &lt;scope&gt;test&lt;/scope&gt;
+        &lt;version&gt;0.7.0&lt;/version&gt;
+   &lt;/dependency&gt; 
+</code></pre>
+
+<hr />
+
+<pre><code>@BenchmarkMethodChart(filePrefix = "target/PinyinConvertersBenchmark")  //指定报表的路径和文件名前缀
+@BenchmarkHistoryChart(filePrefix = "target/PinyinConvertersBenchmark-history", labelWith = LabelType.CUSTOM_KEY, maxRuns = 20)  //设置历史数据报表参数
+public class PinyinConvertersBenchmark extends AbstractBenchmark {
+    final static Random random = new Random();
+
+    final static HanyuPinyinOutputFormat hanyuPinyinOutputFormat = SimplePinyinConverter.getInstance()
+                                                                                    .getDefaultPinyinFormat()
+                                                                                    .getPinyin4jOutputFormat();
+
+    @AfterClass
+    public static void after() {
+        CachedPinyinConverter cachedPinyinConverter = (CachedPinyinConverter) PinyinConverterFactory.CACHED_DEFAULT.get();
+        cachedPinyinConverter.dumpCacheInfo(System.out);
+        CachedConvertAccess.clear(cachedPinyinConverter);
+    }
+
+    //总共运行20w次+5次热身
+    @Test
+    @BenchmarkOptions(benchmarkRounds = 200000, warmupRounds = 5, clock = Clock.NANO_TIME)
+    public void pinyinConverters_ConvertOneStr_CN() throws ConverterException {
+        PinyinConverters.toPinyin("我们对发动过", "");
+    }
+
+    @Test
+    @BenchmarkOptions(benchmarkRounds = 200000, warmupRounds = 5, clock = Clock.NANO_TIME)
+    public void pinyin4j_ConvertOneStr_CN() throws BadHanyuPinyinOutputFormatCombination {
+        PinyinHelper.toHanyuPinyinString("我们对发动过", hanyuPinyinOutputFormat, "");
+    }
+
+    //100个线程运行
+    @Test
+    @BenchmarkOptions(benchmarkRounds = 200000, warmupRounds = 5, concurrency = 100, clock = Clock.NANO_TIME)
+    public void testPutOne_100Thread_CN() {
+        testPutOne_OneThread_CN();
+    }
+}
+</code></pre>
+
+<p>然后作为普通单元测试运行就可以了。<br/>
+如果需要生产报表,<br/>
+1. 要添加jvm参数运行，-Djub.consumers=CONSOLE,H2 -Djub.db.file=./target/.benchmarks<br/>
+jub.db.file路径自己定义。<br/>
+2. 还需要添加H2的依赖:</p>
+
+<pre><code>    &lt;dependency&gt;
+        &lt;groupId&gt;com.h2database&lt;/groupId&gt;
+        &lt;artifactId&gt;h2&lt;/artifactId&gt;
+        &lt;version&gt;1.3.170&lt;/version&gt;
+        &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+</code></pre>
+
+<p>运行后在指定的报表目录下可以找到类似的html报表，对比了总次数、耗时、每个方法的运行时间、gc次数和耗时等数据：<br/>
+<img src="/static/benchmark.jpg" alt="bench" /></p>
+
+<h2>不足之处</h2>
+
+<p>JUnitBenchmark也存在一些不足，报表和功能还不够丰富，只能做一些简单的微基准；使用并发测试时（例如设置concurrency = 100）经常会出现失败,已经反馈了bug,作者表示会尽快修复；<br/>
+目前还没有现成的jenkins集成插件。但是JUnitBenchmark还只是alpha阶段，做到这样已经不错了。</p>
+
+<h2>其他Microbenchmark框架</h2>
+
+<p>以下记录一些Microbenchmark框架，不作详细介绍，有兴趣的慢慢去研究选择适合自己的。</p>
+
+<h3><a href="http://openjdk.java.net/projects/code-tools/jmh/">jmh</a></h3>
+
+<p>ORACLE出品<br/>
+<a href="http://assylias.wordpress.com/2013/05/06/java-micro-benchmark-with-jmh-and-netbeans/  ">http://assylias.wordpress.com/2013/05/06/java-micro-benchmark-with-jmh-and-netbeans/  </a>
+<a href="https://github.com/nitsanw/jmh-samples">https://github.com/nitsanw/jmh-samples</a></p>
+
+<h3><a href="https://japex.java.net/">Japex</a></h3>
+
+<p>需要xml配置，初看配置有点复杂，但图表完善。<br/>
+<a href="https://japex.java.net/docs/manual.html">https://japex.java.net/docs/manual.html</a></p>
+
+<h3><a href="http://www.ellipticgroup.com/misc/projectLibrary.zip">Benchmarking framework</a></h3>
+
+<p><a href="http://www.ellipticgroup.com/misc/projectLibrary.zip  ">http://www.ellipticgroup.com/misc/projectLibrary.zip  </a>
+<a href="http://stackoverflow.com/questions/6373550/create-quick-reliable-benchmark-with-java/7120803#7120803">Create quick/reliable benchmark with java</a><br/>
+not parameterizable; Java library; JVM micro benchmarking; no plotting; no persistence; no trend analysis; statistics.</p>
+
+<h3><a href="http://commons.apache.org/sandbox/monitoring/">Commons monitoring</a></h3>
+
+<p>not parameterizable!?; Java library; no JVM micro benchmarking!?; plotting; persistence through a servlet; no trend analysis!?; no statistics!?.<br/>
+Supports AOP instrumentation.</p>
+
+<h3><a href="http://jamonapi.sourceforge.net/">JAMon</a></h3>
+
+<p>not parameterizable; Java library; no JVM micro benchmarking; plotting, persistence and trend analysis with additional tools (Jarep or JMX); statistics.<br/>
+Good monitoring, intertwined with log4j, data can also be programmatically accessed or queried and your program can take actions on the results.</p>
+
+<h3><a href="http://code.google.com/p/javasimon/">Java Simon</a></h3>
+
+<p>not parameterizable!?; Java library; no JVM micro benchmarking; plotting only with Jarep; persistence only with JMX; no trend analysis; no statistics!?.<br/>
+Competitor of Jamon, supports a hierarchy of monitors.</p>
+
+<h3><a href="http://jetm.void.fm/index.html">JETM</a></h3>
+
+<p>not parameterizable; Java library; JVM micro benchmarking; plotting; persistence; no trend analysis; no statistics.<br/>
+Nice lightweight monitoring tool, no dependencies :) Does not offer sufficient statistics (no standard deviation), and extending the plugIn correspondingly looks quite difficult (Aggregators and Aggregates only have fixed getters for min, max and average).</p>
+
+<h3><a href="http://clarkware.com/software/JUnitPerf.html">junitperf</a></h3>
+
+<p>Mainly for doing trend analysis for performance (with the JUnit test decorator TimedTest) and scalability (with the JUnit test decorator LoadTest).<br/>
+parameterizable; Java library; no JVM micro benchmarking; no plotting; no persistence; no statistics.</p>
+
+<h3><a href="http://perf4j.codehaus.org/">perf4j</a></h3>
+
+<p>not parameterizable; Java library; no JVM micro benchmarking; plotting; persistence via JMX; trend analysis via a log4j appender; statistics.<br/>
+Builds upon a logging framework, can use AOP.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/12/solution-of-dependency-conflicts/">避免jar依赖冲突的一种办法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-12T14:21:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>  java中的依赖冲突问题一直比较头疼，特别是做公用包给其他系统用的时候，现在都不敢引入太多的依赖，基本上每次都要帮别人解决依赖冲突的问题，非常麻烦。</p>
+
+<p>  特别是碰到一些老系统还不是用maven管理的，人家用你的一个功能还要拷一堆jar包过去，然后排出哪些包在系统中已经有了，版本是否兼容等问题，非常蛋疼。为了方便人家使用就想把所有依赖打成一个jar包提供出去，但这样潜在的依赖冲突问题就会更严重，以后出现冲突时都不知道哪个jar包含了冲突的类。</p>
+
+<p>  更不想引入OSGi这种重量级的东西来隔离依赖。</p>
+
+<h2>一种解决方法</h2>
+
+<p>  尝试了多种途径后，发现还是用maven-shade-plugin的relocation方式比较能够满足需要，对于提供基础类库的场景下比较友好。</p>
+
+<p>  原理就是可能把依赖的class重命名包路径，并打包到一个jar中。maven-shade-plugin主要帮我们做了三件事情：</p>
+
+<ul>
+<li>把依赖的class重新放到指定的包下；</li>
+<li>改写相关class的字节码，对应于重定义的包路径；</li>
+<li>把相关依赖的class打进一个jar包；</li>
+</ul>
+
+
+<p>  这样我们对外提供一个jar包就可以了，显得非常干净，依赖的类被定义到指定的包路径中（比如以当前项目路径为前缀），可以避免跟使用者系统的包冲突。</p>
+
+<p>  有时候我们并不希望把所有的依赖都打到一个包中，只想把一部分容易引起冲突的依赖重定义包路径后包含进来，幸运的是maven-shade-plugin很容易做到，并且会把要发布到maven库的pom.xml中的依赖关系都自动改写掉。（通过配置artifactSet中的include和exclude来指定要包含和排除的依赖）</p>
+
+<h2>简单例子</h2>
+
+<p>比如我们有这么一个需求：</p>
+
+<ul>
+<li>假设commons-collections这个包非常容易跟其他系统引起冲突，我们想把它重定义路径后包含到主jar包中；</li>
+<li>假设我们认为mapdb这个类库一般不会跟别人冲突，不想把它打进主jar包里;</li>
+</ul>
+
+
+<p>  在pom.xml中定义plugin:</p>
+
+<pre><code>    &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.1&lt;/version&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;phase&gt;package&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;shade&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;shadedArtifactAttached&gt;false&lt;/shadedArtifactAttached&gt;
+                        &lt;!--&lt;shadedClassifierName&gt;standalone&lt;/shadedClassifierName&gt;--&gt;
+                        &lt;!--&lt;createDependencyReducedPom&gt;true&lt;/createDependencyReducedPom&gt;--&gt;
+                        &lt;!--&lt;shadedArtifactId&gt;jconvert-pinyin-standalone&lt;/shadedArtifactId&gt;--&gt;
+                        &lt;!--&lt;shadeSourcesContent&gt;true&lt;/shadeSourcesContent&gt;--&gt;
+                        &lt;createSourcesJar&gt;true&lt;/createSourcesJar&gt;
+                        &lt;artifactSet&gt;
+                            &lt;excludes&gt;
+                                &lt;exclude&gt;org.mapdb:*&lt;/exclude&gt;
+                            &lt;/excludes&gt;
+                        &lt;/artifactSet&gt;
+                        &lt;relocations&gt;
+                            &lt;relocation&gt;
+                                &lt;pattern&gt;org.apache.commons.collections&lt;/pattern&gt;
+                                &lt;shadedPattern&gt;com.mycompany.myproject.org.apache.commons.collections&lt;/shadedPattern&gt;
+                            &lt;/relocation&gt;
+                        &lt;/relocations&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+    &lt;/plugin&gt;
+</code></pre>
+
+<p>其中shadedArtifactAttached设为false,表示把shade过的jar作为项目默认的包（发布到maven库时也是shade后的包,发布上去的pom也是改写过的）。如果设为true,则默认的包还是不变,会生成一个独立的shade后的包(这样可以提供2种格式的包,比如让maven工程用户依赖普通的包,非maven用户使用shade过的包)。<br/>
+<em>其他详细的参数设置参考 <a href="http://maven.apache.org/plugins/maven-shade-plugin/">maven-shade-plugin官网</a> :</em></p>
+
+<h2>潜在的问题</h2>
+
+<p>如果第三方包中有反射相关的代码，则shade后可能出现不能正常工作，所以要仔细检查确保不会出现问题</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/04/jenkins-caliper/">Jenkins集成caliper</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-04T13:34:00+08:00" pubdate data-updated="true">Feb 4<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>1.jenkins安装caliper-ci插件(Caliper CI Plugin)</p>
+
+<p>2.编写microbench</p>
+
+<pre><code>最简便的办法就是作为单元测试来跑(这样就不用在jenkins里配置跑microbench的步骤)。
+编写好microbench后，加一个test方法运行Runner.main(XXXBenchmarksTest.class, new String[] {
+            "--measureMemory", "--saveResults", "XXXBenchmarks.caliper.json" });方法,
+注意指定结果报告的文件位置（这里指定了放在工程的根目录）。
+</code></pre>
+
+<p>3.在jenkins的job中Add post-build action添加publish caliper microbenchmark results, JSON result files   这项中填入**/*.caliper.json，目的就是告诉插件microbenchmark生成的结果文件在哪里，如果不行就到工作区里找一下报告文件生成到哪里了,多试几次看看路径是否设对了</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/01/23/how-to-octopress/">How-to-octopress</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-23T18:42:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>记录一下怎么用octopress的，尼玛一段时间没弄都忘了怎么用这玩意写博客了。</p>
+
+<p>windows7</p>
+
+<p>安装git</p>
+
+<p>安装Ruby
+下载RubyInstaller和DevKit。选rubyinstaller-1.9.2-p290.exe，DevKit-tdm-32-4.5.2-20111229-1559-sfx.exe</p>
+
+<p><a href="http://rubyforge.org/frs/?group_id=167">http://rubyforge.org/frs/?group_id=167</a></p>
+
+<p><a href="https://github.com/oneclick/rubyinstaller/downloads/">https://github.com/oneclick/rubyinstaller/downloads/</a></p>
+
+<p>先安装RubyInstaller，然后解压缩DevKit(路径中不能有中文)。</p>
+
+<p>在“Start Command Prompt with Ruby”命令行中进入DevKit解压缩的目录，然后运行以下命令:</p>
+
+<p>ruby dk.rb init</p>
+
+<p>ruby dk.rb install</p>
+
+<p>gem install rdiscount &mdash;platform=ruby</p>
+
+<p>cd octopress</p>
+
+<p>gem install bundler</p>
+
+<p>bundle install</p>
+
+<p>由于本地原先已经有octopress，执行</p>
+
+<p>rake setup_github_pages</p>
+
+<hr />
+
+<p>写文章</p>
+
+<p>rake new_post[&ldquo;title&rdquo;]，会创建一个新的Post，新文件在source/_post下，文件名如下面的格式:2012-07-31-title.markdown。该文件可以直接打开修改。</p>
+
+<p>预览效果
+在修改设置或者写完文章后，想看看具体效果，可以通过如下命令来完成:</p>
+
+<p>set LANG=zh_CN.UTF-8</p>
+
+<p>set LC_ALL=zh_CN.UTF-8</p>
+
+<p>rake generate</p>
+
+<p>rake preview</p>
+
+<p>发布到github</p>
+
+<p>rake generate</p>
+
+<p>rake deploy</p>
+
+<p>提交源码</p>
+
+<p>git add .</p>
+
+<p>git commit -m &ldquo;new post&rdquo;</p>
+
+<p>git push origin source</p>
+
+<hr />
+
+<p>windows下可能会在My Octopress Page is coming soon之后出现hellip;不是内部命令之类的错误, 可以不用管, 如果一定不想要出现这个错误可以修改myoctopress目录下的Rakefile, 搜My Octopress Page is coming soon, 在&hellip;前加个<sup>这个是Windows cmd的转义符</sup>, 如下</p>
+
+<p>system &ldquo;echo &lsquo;My Octopress Page is coming soon ^&hellip;&rsquo; > index.html&rdquo;
+rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <code>rake deploy</code>, 就表示成功.</p>
+
+<p>另外文章的文件格式一定要转化一下（环境变量LANG指定的格式），不然生成会出错</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/01/23/hbase-start-error/">Hbase启动问题记录</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-23T17:19:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>昨天测试环境的Hbase启动有问题,日志中显示:</p>
+
+<p>transaction type: 1 error: KeeperErrorCode = NoNode for /hbase</p>
+
+<p>hmaster等其他进程日志中显示连接不上zookeeper，发现zookeeper启动有问题。</p>
+
+<p>于是判断可能是(% style=&ldquo;font-size: 14px; line-height: normal;&rdquo; %)zookeeper中的某些数据丢失了，之前也出现过类似的启动问题，都是清除zookeeper所有数据解决的，这显然不能根本上解决问题。</p>
+
+<p>进一步分析和判断想到hbase的数据目录，由于商测环境是用伪分布式的方式部署的，zookeeper集成在hbase里管理，所以zookeeper的数据也在hbase的临时数据目录下。hbase的临时目录默认是放在/tmp的，而linux的/tmp目录是会被定期清理的(参考linux系统的tmpwatch)。到此问题已基本定位清楚了，修改hbase的临时目录位置，问题解决</p>
+
+<p>hbase.rootdir</p>
+
+<p>这个目录是region  server的共享目录，用来持久化Hbase。URL需要是&#8217;完全正确&#8217;的，还要包含文件系统的scheme。例如，要表示hdfs中的 &lsquo;/hbase&#8217;目录，namenode  运行在namenode.example.org的9090端口。则需要设置为hdfs:~/~/namenode.example.org:9000 /hbase。默认情况下Hbase是写到/tmp的。不改这个配置，数据会丢失。</p>
+
+<p>默认: file:~/~//tmp/hbase-${user.name}/hbase</p>
+
+<p>hbase.tmp.dir</p>
+
+<p>本地文件系统的临时文件夹。可以修改到一个更为持久的目录上。(/tmp会清除)</p>
+
+<p>默认: /tmp/hbase-${user.name}</p>
+
+<p><strong>这两点是hadoop/hbase系统部署和运维要重点注意的事项</strong></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/06/08/weibo-fav-bak/">备份新浪微博收藏夹</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-08T11:49:00+08:00" pubdate data-updated="true">Jun 8<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>由于要定期对收藏的微博进行整理并删除，又想保留一份原始数据，于是想到了备份一下，在网上找了找没有满意的就自己写了一个，顺便体验一下微博开放的api.</p>
+
+<p>这个小程序可以备份收藏微博的原始json格式的数据,也可以保存成易读的文本格式，还可以根据自己的需要扩展保存任何想要的格式(比如excel、html等我就不一一实现了)</p>
+
+<p>程序代码放在github上用于学习交流，可以<a href="https://github.com/wq163/weibobak">点击这里查看</a>源代码和文档，或者<a href="/static/weibobak.tar.gz">binary包</a></p>
+
+<h1>weibobak</h1>
+
+<p>这个小程序可以备份收藏微博的原始json格式的数据,也可以保存成易读的文本格式，还可以根据自己的需要扩展保存任何想要的格式(比如excel、html等我就不一一实现了)。</p>
+
+<p>本程序用于学习交流</p>
+
+<h2><strong>Get Started</strong></h2>
+
+<p>点击deploy.bat打包，然后进入target\weibobak.dir\weibobak这个目录，里面的结构为：</p>
+
+<blockquote><ul>
+<li>weibobak</li>
+<li>bakdir</li>
+<li>lib</li>
+<li>logs</li>
+<li>run.bat</li>
+<li>weibobak.properties</li>
+</ul>
+</blockquote>
+
+<p>在weibobak.properties中填入用户名和密码，然后点击run.bat,运行完成之后会在bakdir目录下生成备份文件</p>
+
+<p><em>note:由于我的app是没有经过新浪审核的，这个app key只是测试用的，只有我在页面上授权的10个用户才能使用。所以如果运行失败请在weibobak.properties中填入可用的client_ID和client_SERCRET就行了</em></p>
+
+<br/><br/>
+
+
+<h2><strong>工程结构的说明</strong></h2>
+
+<blockquote><ul>
+<li>weibobak</li>
+<li>bakdir &mdash;存放数据备份文件的目录</li>
+<li>lib  &mdash;所有依赖的jar包,包含本程序</li>
+<li>bin &mdash;运行脚本目录</li>
+<li>logs  &mdash;日志输出目录</li>
+<li>deploy.bat &mdash;打包脚本<em>（打包后的东西全在target目录里）</em></li>
+<li>eclipse.bat &mdash;生成eclipse工程</li>
+<li>src/main/java &mdash;源代码</li>
+<li>src/main/resources &mdash;配置文件目录
+
+<blockquote><ul>
+<li>weibobak.properties &mdash;本程序的配置文件</li>
+<li>config.properties &mdash;微博sdk的配置文件</li>
+</ul>
+</blockquote></li>
+</ul>
+</blockquote>
+
+<hr />
+
+<p>下面记录一下使用api几个点，自己的体会，也不一定是最好的方法：<br/>
+(以下以我用微博的java sdk写命令行方式的应用来说明)</p>
+
+<p><strong>1. 调用api的准备工作</strong><br/>
+首先要在微博开放平台页面上申请并创建一个应用，完成后会分配给应用App Key和App Secret，这两个东西在程序中要用到.就是在Config.properties里 client_ID和client_SERCRET这两个属性</p>
+
+<p><strong>2. 如何在命令行应用里进行oauth2认证</strong><br/>
+典型的web应用方式是用户点击后跳转到新浪的账号验证页面，输入账号验证通过后回调到应用的页面并在url中带上code值，然后我们用这个code获取AccessToken，这个AccessToken就是授权我们访问数据的凭证。</p>
+
+<p>按照SDK中提供的api是在浏览器中进行交互的，而我只想写个简单的java命令行应用，不想弄web应用。命令行中调用浏览器进行认证后，我的程序无法获得返回的code，也就没法获取到AccessToken(我可不想人工介入,我只想输入自己的微博账号就搞定)。于是想到程序中模拟浏览器请求（也就是页面中输入账号后提交的那一步），通过抓包获知提交请求所需的参数主要有这么几个:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>            <span class="n">PostParameter</span><span class="o">[]</span> <span class="n">params</span> <span class="o">=</span>
+</span><span class='line'>                    <span class="k">new</span> <span class="n">PostParameter</span><span class="o">[]</span> <span class="o">{</span> <span class="k">new</span> <span class="n">PostParameter</span><span class="o">(</span><span class="s">&quot;withOfficalFlag&quot;</span><span class="o">,</span> <span class="mi">0</span><span class="o">),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;response_type&quot;</span><span class="o">,</span> <span class="s">&quot;code&quot;</span><span class="o">),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;redirect_uri&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;redirect_URI&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;client_id&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;client_ID&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;action&quot;</span><span class="o">,</span> <span class="s">&quot;submit&quot;</span><span class="o">),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;userId&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;userId&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;passwd&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;passwd&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;isLoginSina&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">),</span> <span class="k">new</span> <span class="n">PostParameter</span><span class="o">(</span><span class="s">&quot;regCallback&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">),</span>
+</span><span class='line'>                                         <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;state&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">),</span> <span class="k">new</span> <span class="n">PostParameter</span><span class="o">(</span><span class="s">&quot;from&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">)</span> <span class="o">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>并且要增加http header：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>        <span class="n">postMethod</span>
+</span><span class='line'>            <span class="o">.</span><span class="na">addRequestHeader</span><span class="o">(</span><span class="s">&quot;Referer&quot;</span><span class="o">,</span>
+</span><span class='line'>                <span class="s">&quot;https://api.weibo.com/oauth2/authorize?client_id=2671507095&amp;redirect_uri=http://jenwang.org&amp;response_type=code&quot;</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">postMethod</span>
+</span><span class='line'>            <span class="o">.</span><span class="na">addRequestHeader</span><span class="o">(</span><span class="s">&quot;User-Agent&quot;</span><span class="o">,</span>
+</span><span class='line'>                <span class="s">&quot;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.151 Safari/535.19&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/28/test2/">Test2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-28T20:39:00+08:00" pubdate data-updated="true">May 28<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>test test !!!</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/25/first-test-post/">第一次使用,中文问题的解决办法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-25T23:05:00+08:00" pubdate data-updated="true">May 25<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>文章内容和分类中有中文比较麻烦，网上找了很多方法都不管用,我在windows7下cywin的解决办法是：</p>
+
+<ol>
+<li>把文章的makedown文件保存成为无BOM的utf-8格式。</li>
+<li>控制台或脚本中在rake generate命令后加上export LC_ALL=zh_CN.UTF-8和export LANG=zh_CN.UTF-8</li>
+</ol>
+
+
+<p>两步骤缺一不可</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-meta/">淘宝消息中间件Metamorphosis开源</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-04-14T20:55:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href="https://github.com/killme2008/Metamorphosis">https://github.com/killme2008/Metamorphosis</a></p>
+
+<p><img src="/static/old-blog/meta.jpg" alt="" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-mmap-crash/">MappedByteBuffer强制释放后读取引发jvm Crash</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-04-14T20:52:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/static/old-blog/mmap-crash.jpg" alt="" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-beanutils-null/">关于BeanUtils拷贝null属性的问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-04-14T20:50:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/static/old-blog/beanutils-null.jpg" alt="" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/2/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>About Me</h1>
+  <p>非著名IT从业者，曾经就职于淘宝java中间件团队，现为供职于中国电信天翼阅读基地.</p>
+</section>
+
+<section>
+  <h1>新浪微博</h1>
+  <ul id="weibo">
+    <li>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=1&ptype=1&speed=300&skin=1&isTitle=0&noborder=0&isWeibo=1&isFans=1&uid=1951571225&verifier=bbf78df1&dpc=1"></iframe>
+</li>
+  </ul>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+ <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
+<li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
+<li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
+<li class='category'><a href='/blog/categories/java技术/'>java技术 (4)</a></li>
+<li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
+<li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
+<li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>
+<li class='category'><a href='/blog/categories/故障排查/'>故障排查 (1)</a></li>
+
+ </ul>
+</section>
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/wq163">@wq163</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'wq163',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - jenwang -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
