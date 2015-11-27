@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: clojure | JenWang's blog]]></title>
+  <link href="http://wq163.github.io/blog/categories/clojure/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2015-11-27T16:18:05+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leiningen的profiles.clj不生效？]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/16/leiningen-profiles/"/>
+    <updated>2013-07-16T18:54:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/16/leiningen-profiles</id>
+    <content type="html"><![CDATA[<p>需求:<br/>
+比如要自定义本地maven库的路径，又不想在project.clj中定义，因为每个人的本地路径不同，写在工程中不好。那么在profiles.clj中定义比较好：</p>
+
+<pre><code>{:user {:local-repo "D:\\m2\\repository"}}
+</code></pre>
+
+<p>当庆幸找到解决方法时，一运行发现根本没生效是件很扫兴的事。
+网上能找到的资料都告诉你profiles.clj这个文件是放在~/.lein/这个目录下的。</p>
+
+<p><strong>实际情况是：</strong>
+<code>如果自定义了LEIN_HOME的路径，那么profiles.clj就应该放在LEIN_HOME目录下，而不是~/.lein/下</code><br/>
+否则不会生效，切记。</p>
+]]></content>
+  </entry>
+  
+</feed>

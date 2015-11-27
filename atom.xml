@@ -1,114 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  <title>JenWang's blog</title>
-  <meta name="author" content="jenwang">
-
-  
-  <meta name="description" content="经常碰到这种事情: 在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事. 下面给出一个便捷的办法: &hellip;">
-  
-
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><![CDATA[JenWang's blog]]></title>
+  <link href="http://wq163.github.io/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2015-11-27T16:18:05+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
 
   
-  <link rel="canonical" href="http://wq163.github.io">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="JenWang's blog" type="application/atom+xml">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="javascripts/libs/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-  
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-32197227-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-
-
-</head>
-
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">JenWang's blog</a></h1>
-  
-    <h2>据说界面一定要丑陋.</h2>
-  
-</hgroup>
-
-</header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss email">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-    <li><a href="wq163@163.com" rel="subscribe-email" title="subscribe via email">Email</a></li>
-  
-</ul>
-  
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:wq163.github.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-03-27T17:50:00+08:00" pubdate data-updated="true">Mar 27<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong> 经常碰到这种事情: </strong></p>
+  <entry>
+    <title type="html"><![CDATA[如何一次性下载某个类库依赖的所有jar包]]></title>
+    <link href="http://wq163.github.io/blog/2014/03/27/mvn-depencies-download/"/>
+    <updated>2014-03-27T17:50:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2014/03/27/mvn-depencies-download</id>
+    <content type="html"><![CDATA[<p><strong> 经常碰到这种事情: </strong></p>
 
 <p>在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事.</p>
 
@@ -154,42 +64,15 @@
 <code>mvn -f download-dep-pom.xml dependency:copy-dependencies</code></p>
 
 <p>所有跟这个类库相关的直接和间接依赖的jar包都会下载到 ./target/dependency/下</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-30T11:24:00+08:00" pubdate data-updated="true">Sep 30<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>java序列化trick and trap</h2>
+  <entry>
+    <title type="html"><![CDATA[关于serialVersionUID与序列化]]></title>
+    <link href="http://wq163.github.io/blog/2013/09/30/serialversionuid-and-serializable/"/>
+    <updated>2013-09-30T11:24:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/09/30/serialversionuid-and-serializable</id>
+    <content type="html"><![CDATA[<h2>java序列化trick and trap</h2>
 
 <p>厂内经常出现序列化对象版本不匹配问题，于是发本文说明一些序列化的注意点</p>
 
@@ -249,49 +132,22 @@
 
 
 <p><em>本文大部分内容取自前同事的分享资料，作了少许修改，<a href="http://lokki.iteye.com/blog/1134482">外网地址</a></em></p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-07-25T21:33:00+08:00" pubdate data-updated="true">Jul 25<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。<br/>
+  <entry>
+    <title type="html"><![CDATA[一个java内存泄漏的排查案例]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/25/fullgc/"/>
+    <updated>2013-07-25T21:33:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/25/fullgc</id>
+    <content type="html"><![CDATA[<p>这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。<br/>
 下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
 <em>（以便新人参考和自己回顾）</em></p>
 
 <h2>初步的现象</h2>
 
 <p>业务系统消费MQ中消息速度变慢，积压了200多万条消息，通过jstat观察到业务系统fullgc比较频繁,到最后干脆OOM了：<br/>
-<img src="/static/gc.png" alt="" /></p>
+<img src="http://wq163.github.io/static/gc.png" alt="" /></p>
 
 <h2>进一步分析</h2>
 
@@ -299,7 +155,7 @@
 很多人都会想到把堆dump下来再用MAT等工具进行分析，但dump堆要花较长的时间，并且文件巨大，再从服务器上拖回本地导入工具，这个过程太折腾不到万不得已最好别这么干。</p>
 
 <p>可以用更轻量级的在线分析，用jmap查看存活的对象情况（jmap -histo:live [pid]），可以看出HashTable中的元素有5000多万，占用内存大约1.5G的样子：<br/>
-<img src="/static/jmap.png" alt="" /></p>
+<img src="http://wq163.github.io/static/jmap.png" alt="" /></p>
 
 <h2>定位到代码</h2>
 
@@ -328,47 +184,20 @@ public class TracingHashTable {
 <p>然后运行：
 bin/btrace -cp build 4947 TracingHashTable.java  <br/>
 看到有大量类似下图的调用堆栈<br/>
-<img src="/static/btrace.png" alt="" /></p>
+<img src="http://wq163.github.io/static/btrace.png" alt="" /></p>
 
 <p>可以看出是在接收到消息后查询入库的代码造成的，业务方法调用ibatis再到mysql jdbc驱动执行statement时put了大量的属性到HashTable中。</p>
 
 <p>通过以上排查已基本定位了由那块代码引起的，接下来就是打开代码工程进行白盒化改造了，对相应代码进行优化（不在本文范围内了。几个图中的pid不一致就别纠结了，有些是系统重启过再截图的）.</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-07-16T18:54:00+08:00" pubdate data-updated="true">Jul 16<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>需求:<br/>
+  <entry>
+    <title type="html"><![CDATA[Leiningen的profiles.clj不生效？]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/16/leiningen-profiles/"/>
+    <updated>2013-07-16T18:54:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/16/leiningen-profiles</id>
+    <content type="html"><![CDATA[<p>需求:<br/>
 比如要自定义本地maven库的路径，又不想在project.clj中定义，因为每个人的本地路径不同，写在工程中不好。那么在profiles.clj中定义比较好：</p>
 
 <pre><code>{:user {:local-repo "D:\\m2\\repository"}}
@@ -380,42 +209,15 @@ bin/btrace -cp build 4947 TracingHashTable.java  <br/>
 <p><strong>实际情况是：</strong>
 <code>如果自定义了LEIN_HOME的路径，那么profiles.clj就应该放在LEIN_HOME目录下，而不是~/.lein/下</code><br/>
 否则不会生效，切记。</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-07-12T15:51:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>大家知道单元测试对代码质量的保障作用已经没什么可说的了。Microbenchmark（微基准测试）也是保证代码质量的重要手段，也是容易忽略的，它用来衡量一些小的代码片段的性能指标，完善的Microbenchmark可以便于定位出一些性能瓶颈,它类似于单元测试,能够进行持续集成,当代码有改动时能够通过持续集成的历史数据 看出对性能的影响点。</p>
+  <entry>
+    <title type="html"><![CDATA[关于Java Microbenchmark的一点记录]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/12/java-microbenchmark/"/>
+    <updated>2013-07-12T15:51:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/12/java-microbenchmark</id>
+    <content type="html"><![CDATA[<p>大家知道单元测试对代码质量的保障作用已经没什么可说的了。Microbenchmark（微基准测试）也是保证代码质量的重要手段，也是容易忽略的，它用来衡量一些小的代码片段的性能指标，完善的Microbenchmark可以便于定位出一些性能瓶颈,它类似于单元测试,能够进行持续集成,当代码有改动时能够通过持续集成的历史数据 看出对性能的影响点。</p>
 
 <p>之前使用Google的Caliper，但目前还在重度开发中，每个版本API变化比较大，还有好些地方不够稳定，所以暂时放弃使用。</p>
 
@@ -490,7 +292,7 @@ jub.db.file路径自己定义。<br/>
 </code></pre>
 
 <p>运行后在指定的报表目录下可以找到类似的html报表，对比了总次数、耗时、每个方法的运行时间、gc次数和耗时等数据：<br/>
-<img src="/static/benchmark.jpg" alt="bench" /></p>
+<img src="http://wq163.github.io/static/benchmark.jpg" alt="bench" /></p>
 
 <h2>不足之处</h2>
 
@@ -547,42 +349,15 @@ parameterizable; Java library; no JVM micro benchmarking; no plotting; no persis
 
 <p>not parameterizable; Java library; no JVM micro benchmarking; plotting; persistence via JMX; trend analysis via a log4j appender; statistics.<br/>
 Builds upon a logging framework, can use AOP.</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/12/solution-of-dependency-conflicts/">避免jar依赖冲突的一种办法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-07-12T14:21:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>  java中的依赖冲突问题一直比较头疼，特别是做公用包给其他系统用的时候，现在都不敢引入太多的依赖，基本上每次都要帮别人解决依赖冲突的问题，非常麻烦。</p>
+  <entry>
+    <title type="html"><![CDATA[避免jar依赖冲突的一种办法]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/12/solution-of-dependency-conflicts/"/>
+    <updated>2013-07-12T14:21:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/12/solution-of-dependency-conflicts</id>
+    <content type="html"><![CDATA[<p>  java中的依赖冲突问题一直比较头疼，特别是做公用包给其他系统用的时候，现在都不敢引入太多的依赖，基本上每次都要帮别人解决依赖冲突的问题，非常麻烦。</p>
 
 <p>  特别是碰到一些老系统还不是用maven管理的，人家用你的一个功能还要拷一堆jar包过去，然后排出哪些包在系统中已经有了，版本是否兼容等问题，非常蛋疼。为了方便人家使用就想把所有依赖打成一个jar包提供出去，但这样潜在的依赖冲突问题就会更严重，以后出现冲突时都不知道哪个jar包含了冲突的类。</p>
 
@@ -657,42 +432,15 @@ Builds upon a logging framework, can use AOP.</p>
 <h2>潜在的问题</h2>
 
 <p>如果第三方包中有反射相关的代码，则shade后可能出现不能正常工作，所以要仔细检查确保不会出现问题</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/02/04/jenkins-caliper/">Jenkins集成caliper</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-02-04T13:34:00+08:00" pubdate data-updated="true">Feb 4<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>1.jenkins安装caliper-ci插件(Caliper CI Plugin)</p>
+  <entry>
+    <title type="html"><![CDATA[jenkins集成caliper]]></title>
+    <link href="http://wq163.github.io/blog/2013/02/04/jenkins-caliper/"/>
+    <updated>2013-02-04T13:34:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/02/04/jenkins-caliper</id>
+    <content type="html"><![CDATA[<p>1.jenkins安装caliper-ci插件(Caliper CI Plugin)</p>
 
 <p>2.编写microbench</p>
 
@@ -703,42 +451,15 @@ Builds upon a logging framework, can use AOP.</p>
 </code></pre>
 
 <p>3.在jenkins的job中Add post-build action添加publish caliper microbenchmark results, JSON result files   这项中填入**/*.caliper.json，目的就是告诉插件microbenchmark生成的结果文件在哪里，如果不行就到工作区里找一下报告文件生成到哪里了,多试几次看看路径是否设对了</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/01/23/how-to-octopress/">How-to-octopress</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-23T18:42:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>记录一下怎么用octopress的，尼玛一段时间没弄都忘了怎么用这玩意写博客了。</p>
+  <entry>
+    <title type="html"><![CDATA[how-to-octopress]]></title>
+    <link href="http://wq163.github.io/blog/2013/01/23/how-to-octopress/"/>
+    <updated>2013-01-23T18:42:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/01/23/how-to-octopress</id>
+    <content type="html"><![CDATA[<p>记录一下怎么用octopress的，尼玛一段时间没弄都忘了怎么用这玩意写博客了。</p>
 
 <p>windows7</p>
 
@@ -810,42 +531,15 @@ Builds upon a logging framework, can use AOP.</p>
 rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <code>rake deploy</code>, 就表示成功.</p>
 
 <p>另外文章的文件格式一定要转化一下（环境变量LANG指定的格式），不然生成会出错</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/01/23/hbase-start-error/">Hbase启动问题记录</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-23T17:19:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>昨天测试环境的Hbase启动有问题,日志中显示:</p>
+  <entry>
+    <title type="html"><![CDATA[hbase启动问题记录]]></title>
+    <link href="http://wq163.github.io/blog/2013/01/23/hbase-start-error/"/>
+    <updated>2013-01-23T17:19:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/01/23/hbase-start-error</id>
+    <content type="html"><![CDATA[<p>昨天测试环境的Hbase启动有问题,日志中显示:</p>
 
 <p>transaction type: 1 error: KeeperErrorCode = NoNode for /hbase</p>
 
@@ -868,46 +562,19 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
 <p>默认: /tmp/hbase-${user.name}</p>
 
 <p><strong>这两点是hadoop/hbase系统部署和运维要重点注意的事项</strong></p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/06/08/weibo-fav-bak/">备份新浪微博收藏夹</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-06-08T11:49:00+08:00" pubdate data-updated="true">Jun 8<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>由于要定期对收藏的微博进行整理并删除，又想保留一份原始数据，于是想到了备份一下，在网上找了找没有满意的就自己写了一个，顺便体验一下微博开放的api.</p>
+  <entry>
+    <title type="html"><![CDATA[备份新浪微博收藏夹]]></title>
+    <link href="http://wq163.github.io/blog/2012/06/08/weibo-fav-bak/"/>
+    <updated>2012-06-08T11:49:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2012/06/08/weibo-fav-bak</id>
+    <content type="html"><![CDATA[<p>由于要定期对收藏的微博进行整理并删除，又想保留一份原始数据，于是想到了备份一下，在网上找了找没有满意的就自己写了一个，顺便体验一下微博开放的api.</p>
 
 <p>这个小程序可以备份收藏微博的原始json格式的数据,也可以保存成易读的文本格式，还可以根据自己的需要扩展保存任何想要的格式(比如excel、html等我就不一一实现了)</p>
 
-<p>程序代码放在github上用于学习交流，可以<a href="https://github.com/wq163/weibobak">点击这里查看</a>源代码和文档，或者<a href="/static/weibobak.tar.gz">binary包</a></p>
+<p>程序代码放在github上用于学习交流，可以<a href="https://github.com/wq163/weibobak">点击这里查看</a>源代码和文档，或者<a href="http://wq163.github.io/static/weibobak.tar.gz">binary包</a></p>
 
 <h1>weibobak</h1>
 
@@ -1011,78 +678,24 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
 
 
 
-</div>
+]]></content>
+  </entry>
   
+  <entry>
+    <title type="html"><![CDATA[test2]]></title>
+    <link href="http://wq163.github.io/blog/2012/05/28/test2/"/>
+    <updated>2012-05-28T20:39:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2012/05/28/test2</id>
+    <content type="html"><![CDATA[<p>test test !!!</p>
+]]></content>
+  </entry>
   
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/05/28/test2/">Test2</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-28T20:39:00+08:00" pubdate data-updated="true">May 28<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>test test !!!</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/05/25/first-test-post/">第一次使用,中文问题的解决办法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-25T23:05:00+08:00" pubdate data-updated="true">May 25<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>文章内容和分类中有中文比较麻烦，网上找了很多方法都不管用,我在windows7下cywin的解决办法是：</p>
+  <entry>
+    <title type="html"><![CDATA[第一次使用,中文问题的解决办法]]></title>
+    <link href="http://wq163.github.io/blog/2012/05/25/first-test-post/"/>
+    <updated>2012-05-25T23:05:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2012/05/25/first-test-post</id>
+    <content type="html"><![CDATA[<p>文章内容和分类中有中文比较麻烦，网上找了很多方法都不管用,我在windows7下cywin的解决办法是：</p>
 
 <ol>
 <li>把文章的makedown文件保存成为无BOM的utf-8格式。</li>
@@ -1091,242 +704,81 @@ rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <cod
 
 
 <p>两步骤缺一不可</p>
-</div>
+]]></content>
+  </entry>
   
+  <entry>
+    <title type="html"><![CDATA[淘宝消息中间件Metamorphosis开源]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-meta/"/>
+    <updated>2011-04-14T20:55:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-meta</id>
+    <content type="html"><![CDATA[<p><a href="https://github.com/killme2008/Metamorphosis">https://github.com/killme2008/Metamorphosis</a></p>
+
+<p><img src="http://wq163.github.io/static/old-blog/meta.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
-
-
-    </article>
+  <entry>
+    <title type="html"><![CDATA[MappedByteBuffer强制释放后读取引发jvm crash]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-mmap-crash/"/>
+    <updated>2011-04-14T20:52:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-mmap-crash</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/mmap-crash.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
+  <entry>
+    <title type="html"><![CDATA[关于BeanUtils拷贝null属性的问题]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-beanutils-null/"/>
+    <updated>2011-04-14T20:50:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-beanutils-null</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/beanutils-null.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-meta/">淘宝消息中间件Metamorphosis开源</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
+  <entry>
+    <title type="html"><![CDATA[hadoop单元测试方法--使用和增强MRUnit[2]]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-mrunit2/"/>
+    <updated>2011-04-14T20:48:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-mrunit2</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/mrunit2.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
-
-
-<time datetime="2011-04-14T20:55:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="https://github.com/killme2008/Metamorphosis">https://github.com/killme2008/Metamorphosis</a></p>
-
-<p><img src="/static/old-blog/meta.jpg" alt="" /></p>
-</div>
+  <entry>
+    <title type="html"><![CDATA[hadoop单元测试方法--使用和增强MRUnit[1]]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-mrunit1/"/>
+    <updated>2011-04-14T20:47:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-mrunit1</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/mrunit1.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
+  <entry>
+    <title type="html"><![CDATA[JUC代码浅析[6]——基于AQS的CyclicBarrier]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-juc-CyclicBarrier/"/>
+    <updated>2011-04-14T20:46:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-juc-CyclicBarrier</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/juc-CyclicBarrier.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
-
-
-    </article>
+  <entry>
+    <title type="html"><![CDATA[JUC代码浅析[5]——同步器AQS]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-juc-CountDownLatch/"/>
+    <updated>2011-04-14T20:45:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-juc-CountDownLatch</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/juc-CountDownLatch.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
+  <entry>
+    <title type="html"><![CDATA[JUC代码浅析[4]——基于AQS的信号量Semaphore]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-juc-Semaphore/"/>
+    <updated>2011-04-14T20:42:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-juc-Semaphore</id>
+    <content type="html"><![CDATA[<p><img src="http://wq163.github.io/static/old-blog/juc-Semaphore.jpg" alt="" /></p>
+]]></content>
+  </entry>
   
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-mmap-crash/">MappedByteBuffer强制释放后读取引发jvm Crash</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-04-14T20:52:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/static/old-blog/mmap-crash.jpg" alt="" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/04/14/oldblog-beanutils-null/">关于BeanUtils拷贝null属性的问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-04-14T20:50:00+08:00" pubdate data-updated="true">Apr 14<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/static/old-blog/beanutils-null.jpg" alt="" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/2/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    <section>
-  <h1>About Me</h1>
-  <p>非著名IT从业者，曾经就职于淘宝java中间件团队，现为供职于中国电信天翼阅读基地.</p>
-</section>
-
-<section>
-  <h1>新浪微博</h1>
-  <ul id="weibo">
-    <li>
-<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=1&ptype=1&speed=300&skin=1&isTitle=0&noborder=0&isWeibo=1&isFans=1&uid=1951571225&verifier=bbf78df1&dpc=1"></iframe>
-</li>
-  </ul>
-</section>
-<section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a>
-      </li>
-    
-  </ul>
-</section>
-<section>
- <h1>Categories</h1>
- <ul id="categories">
- <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
-<li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
-<li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
-<li class='category'><a href='/blog/categories/java技术/'>java技术 (4)</a></li>
-<li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
-<li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
-<li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>
-<li class='category'><a href='/blog/categories/故障排查/'>故障排查 (1)</a></li>
-
- </ul>
-</section>
-<section>
-  <h1>GitHub Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  
-  <a href="https://github.com/wq163">@wq163</a> on GitHub
-  
-  <script type="text/javascript">
-    $(document).ready(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'wq163',
-            count: 0,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-
-
-
-
-  
-</aside>
-
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - jenwang -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
-
-</footer>
-  
-
-
-
-
-
-
-
-
-
-
-
-</body>
-</html>
+</feed>

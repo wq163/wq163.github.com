@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 技术 | JenWang's blog]]></title>
+  <link href="http://wq163.github.io/blog/categories/ji-zhu/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2015-11-27T16:18:05+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[备份新浪微博收藏夹]]></title>
+    <link href="http://wq163.github.io/blog/2012/06/08/weibo-fav-bak/"/>
+    <updated>2012-06-08T11:49:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2012/06/08/weibo-fav-bak</id>
+    <content type="html"><![CDATA[<p>由于要定期对收藏的微博进行整理并删除，又想保留一份原始数据，于是想到了备份一下，在网上找了找没有满意的就自己写了一个，顺便体验一下微博开放的api.</p>
+
+<p>这个小程序可以备份收藏微博的原始json格式的数据,也可以保存成易读的文本格式，还可以根据自己的需要扩展保存任何想要的格式(比如excel、html等我就不一一实现了)</p>
+
+<p>程序代码放在github上用于学习交流，可以<a href="https://github.com/wq163/weibobak">点击这里查看</a>源代码和文档，或者<a href="/static/weibobak.tar.gz">binary包</a></p>
+
+<p>weibobak
+========
+这个小程序可以备份收藏微博的原始json格式的数据,也可以保存成易读的文本格式，还可以根据自己的需要扩展保存任何想要的格式(比如excel、html等我就不一一实现了)。  
+
+本程序用于学习交流
+
+## **Get Started** ##
+点击deploy.bat打包，然后进入target\weibobak.dir\weibobak这个目录，里面的结构为：  
+>  - weibobak  
+- bakdir  
+- lib  
+- logs  
+- run.bat  
+- weibobak.properties  
+
+在weibobak.properties中填入用户名和密码，然后点击run.bat,运行完成之后会在bakdir目录下生成备份文件
+
+*note:由于我的app是没有经过新浪审核的，这个app key只是测试用的，只有我在页面上授权的10个用户才能使用。所以如果运行失败请在weibobak.properties中填入可用的client_ID和client_SERCRET就行了*
+
+<br/><br/>
+## **工程结构的说明** ##
+>  - weibobak  
+- bakdir --存放数据备份文件的目录
+- lib  --所有依赖的jar包,包含本程序
+- bin --运行脚本目录
+- logs  --日志输出目录
+- deploy.bat --打包脚本*（打包后的东西全在target目录里）*
+- eclipse.bat --生成eclipse工程
+- src/main/java --源代码
+- src/main/resources --配置文件目录  
+> > - weibobak.properties --本程序的配置文件  
+> > - config.properties --微博sdk的配置文件  
+</p>
+
+<hr />
+
+<p>下面记录一下使用api几个点，自己的体会，也不一定是最好的方法：<br/>
+(以下以我用微博的java sdk写命令行方式的应用来说明)</p>
+
+<p><strong>1. 调用api的准备工作</strong><br/>
+首先要在微博开放平台页面上申请并创建一个应用，完成后会分配给应用App Key和App Secret，这两个东西在程序中要用到.就是在Config.properties里 client_ID和client_SERCRET这两个属性</p>
+
+<p><strong>2. 如何在命令行应用里进行oauth2认证</strong><br/>
+典型的web应用方式是用户点击后跳转到新浪的账号验证页面，输入账号验证通过后回调到应用的页面并在url中带上code值，然后我们用这个code获取AccessToken，这个AccessToken就是授权我们访问数据的凭证。</p>
+
+<p>按照SDK中提供的api是在浏览器中进行交互的，而我只想写个简单的java命令行应用，不想弄web应用。命令行中调用浏览器进行认证后，我的程序无法获得返回的code，也就没法获取到AccessToken(我可不想人工介入,我只想输入自己的微博账号就搞定)。于是想到程序中模拟浏览器请求（也就是页面中输入账号后提交的那一步），通过抓包获知提交请求所需的参数主要有这么几个:<br/>
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>        <span class="n">PostParameter</span><span class="o">[]</span> <span class="n">params</span> <span class="o">=</span>
+</span><span class='line'>                <span class="k">new</span> <span class="n">PostParameter</span><span class="o">[]</span> <span class="o">{</span> <span class="k">new</span> <span class="n">PostParameter</span><span class="o">(</span><span class="s">&quot;withOfficalFlag&quot;</span><span class="o">,</span> <span class="mi">0</span><span class="o">),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;response_type&quot;</span><span class="o">,</span> <span class="s">&quot;code&quot;</span><span class="o">),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;redirect_uri&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;redirect_URI&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;client_id&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;client_ID&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;action&quot;</span><span class="o">,</span> <span class="s">&quot;submit&quot;</span><span class="o">),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;userId&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;userId&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;passwd&quot;</span><span class="o">,</span> <span class="n">Config</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="s">&quot;passwd&quot;</span><span class="o">).</span><span class="na">trim</span><span class="o">()),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;isLoginSina&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">),</span> <span class="k">new</span> <span class="n">PostParameter</span><span class="o">(</span><span class="s">&quot;regCallback&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">),</span>
+</span><span class='line'>                                     <span class="k">new</span> <span class="nf">PostParameter</span><span class="o">(</span><span class="s">&quot;state&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">),</span> <span class="k">new</span> <span class="n">PostParameter</span><span class="o">(</span><span class="s">&quot;from&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">)</span> <span class="o">};</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>并且要增加http header：<br/>
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">postMethod</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">addRequestHeader</span><span class="o">(</span><span class="s">&quot;Referer&quot;</span><span class="o">,</span>
+</span><span class='line'>            <span class="s">&quot;https://api.weibo.com/oauth2/authorize?client_id=2671507095&amp;amp;redirect_uri=http://jenwang.org&amp;amp;response_type=code&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">postMethod</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">addRequestHeader</span><span class="o">(</span><span class="s">&quot;User-Agent&quot;</span><span class="o">,</span>
+</span><span class='line'>            <span class="s">&quot;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.151 Safari/535.19&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[淘宝消息中间件Metamorphosis开源]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-meta/"/>
+    <updated>2011-04-14T20:55:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-meta</id>
+    <content type="html"><![CDATA[<p><a href="https://github.com/killme2008/Metamorphosis">https://github.com/killme2008/Metamorphosis</a></p>
+
+<p><img src="/static/old-blog/meta.jpg" alt="" /></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MappedByteBuffer强制释放后读取引发jvm crash]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-mmap-crash/"/>
+    <updated>2011-04-14T20:52:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-mmap-crash</id>
+    <content type="html"><![CDATA[<p><img src="/static/old-blog/mmap-crash.jpg" alt="" /></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于BeanUtils拷贝null属性的问题]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-beanutils-null/"/>
+    <updated>2011-04-14T20:50:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-beanutils-null</id>
+    <content type="html"><![CDATA[<p><img src="/static/old-blog/beanutils-null.jpg" alt="" /></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[hadoop单元测试方法--使用和增强MRUnit[2]]]></title>
+    <link href="http://wq163.github.io/blog/2011/04/14/oldblog-mrunit2/"/>
+    <updated>2011-04-14T20:48:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2011/04/14/oldblog-mrunit2</id>
+    <content type="html"><![CDATA[<p><img src="/static/old-blog/mrunit2.jpg" alt="" /></p>
+]]></content>
+  </entry>
+  
+</feed>

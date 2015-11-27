@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>how-to-octopress - JenWang's blog</title>
+  <meta name="author" content="jenwang">
+
+  
+  <meta name="description" content="记录一下怎么用octopress的，尼玛一段时间没弄都忘了怎么用这玩意写博客了。 windows7 安装git 安装Ruby
+下载RubyInstaller和DevKit。选rubyinstaller-1.9.2-p290.exe，DevKit-tdm-32-4.5.2-20111229-1559 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://wq163.github.io/blog/2013/01/23/how-to-octopress">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="JenWang's blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="javascripts/libs/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32197227-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">JenWang's blog</a></h1>
+  
+    <h2>据说界面一定要丑陋.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss email">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+    <li><a href="wq163@163.com" rel="subscribe-email" title="subscribe via email">Email</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:wq163.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">How-to-octopress</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-23T18:42:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>记录一下怎么用octopress的，尼玛一段时间没弄都忘了怎么用这玩意写博客了。</p>
+
+<p>windows7</p>
+
+<p>安装git</p>
+
+<p>安装Ruby
+下载RubyInstaller和DevKit。选rubyinstaller-1.9.2-p290.exe，DevKit-tdm-32-4.5.2-20111229-1559-sfx.exe</p>
+
+<p><a href="http://rubyforge.org/frs/?group_id=167">http://rubyforge.org/frs/?group_id=167</a></p>
+
+<p><a href="https://github.com/oneclick/rubyinstaller/downloads/">https://github.com/oneclick/rubyinstaller/downloads/</a></p>
+
+<p>先安装RubyInstaller，然后解压缩DevKit(路径中不能有中文)。</p>
+
+<p>在“Start Command Prompt with Ruby”命令行中进入DevKit解压缩的目录，然后运行以下命令:</p>
+
+<p>ruby dk.rb init</p>
+
+<p>ruby dk.rb install</p>
+
+<p>gem install rdiscount &mdash;platform=ruby</p>
+
+<p>cd octopress</p>
+
+<p>gem install bundler</p>
+
+<p>bundle install</p>
+
+<p>由于本地原先已经有octopress，执行</p>
+
+<p>rake setup_github_pages</p>
+
+<hr />
+
+<p>写文章</p>
+
+<p>rake new_post[&ldquo;title&rdquo;]，会创建一个新的Post，新文件在source/_post下，文件名如下面的格式:2012-07-31-title.markdown。该文件可以直接打开修改。</p>
+
+<p>预览效果
+在修改设置或者写完文章后，想看看具体效果，可以通过如下命令来完成:</p>
+
+<p>set LANG=zh_CN.UTF-8</p>
+
+<p>set LC_ALL=zh_CN.UTF-8</p>
+
+<p>rake generate</p>
+
+<p>rake preview</p>
+
+<p>发布到github</p>
+
+<p>rake generate</p>
+
+<p>rake deploy</p>
+
+<p>提交源码</p>
+
+<p>git add .</p>
+
+<p>git commit -m &ldquo;new post&rdquo;</p>
+
+<p>git push origin source</p>
+
+<hr />
+
+<p>windows下可能会在My Octopress Page is coming soon之后出现hellip;不是内部命令之类的错误, 可以不用管, 如果一定不想要出现这个错误可以修改myoctopress目录下的Rakefile, 搜My Octopress Page is coming soon, 在&hellip;前加个<sup>这个是Windows cmd的转义符</sup>, 如下</p>
+
+<p>system &ldquo;echo &lsquo;My Octopress Page is coming soon ^&hellip;&rsquo; > index.html&rdquo;
+rake setup_github_pages命令最后出现Now you can deploy to xxxxxxx with <code>rake deploy</code>, 就表示成功.</p>
+
+<p>另外文章的文件格式一定要转化一下（环境变量LANG指定的格式），不然生成会出错</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">jenwang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-23T18:42:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2013</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/01/23/hbase-start-error/" title="Previous Post: hbase启动问题记录">&laquo; hbase启动问题记录</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/04/jenkins-caliper/" title="Next Post: jenkins集成caliper">jenkins集成caliper &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>About Me</h1>
+  <p>非著名IT从业者，曾经就职于淘宝java中间件团队，现为供职于中国电信天翼阅读基地.</p>
+</section>
+
+<section>
+  <h1>新浪微博</h1>
+  <ul id="weibo">
+    <li>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=1&ptype=1&speed=300&skin=1&isTitle=0&noborder=0&isWeibo=1&isFans=1&uid=1951571225&verifier=bbf78df1&dpc=1"></iframe>
+</li>
+  </ul>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+ <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
+<li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
+<li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
+<li class='category'><a href='/blog/categories/java技术/'>java技术 (4)</a></li>
+<li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
+<li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
+<li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>
+<li class='category'><a href='/blog/categories/故障排查/'>故障排查 (1)</a></li>
+
+ </ul>
+</section>
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/wq163">@wq163</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'wq163',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - jenwang -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

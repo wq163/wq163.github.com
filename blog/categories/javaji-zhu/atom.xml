@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: java技术 | JenWang's blog]]></title>
+  <link href="http://wq163.github.io/blog/categories/javaji-zhu/atom.xml" rel="self"/>
+  <link href="http://wq163.github.io/"/>
+  <updated>2015-11-27T16:18:05+08:00</updated>
+  <id>http://wq163.github.io/</id>
+  <author>
+    <name><![CDATA[jenwang]]></name>
+    <email><![CDATA[wq163@163.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[如何一次性下载某个类库依赖的所有jar包]]></title>
+    <link href="http://wq163.github.io/blog/2014/03/27/mvn-depencies-download/"/>
+    <updated>2014-03-27T17:50:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2014/03/27/mvn-depencies-download</id>
+    <content type="html"><![CDATA[<p><strong> 经常碰到这种事情: </strong></p>
+
+<p>在一些非maven工程中(由于某种原因这种工程还是手工添加依赖的),需要用到某个新的类库(假设这个类库发布在maven库中),而这个类库又间接依赖很多其他类库,如果依赖路径非常复杂的话,一个个检查手动下载是很麻烦的事.</p>
+
+<p><strong> 下面给出一个便捷的办法: </strong></p>
+
+<p>创建一个新目录里面建一个maven pom文件, 添加需要依赖的类库:</p>
+
+<p>```
+&lt;?xml version=&ldquo;1.0&rdquo;?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"></p>
+
+<pre><code>&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+&lt;groupId&gt;com.dep.download&lt;/groupId&gt;
+&lt;artifactId&gt;dep-download&lt;/artifactId&gt;
+&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.xx.xxx&lt;/groupId&gt;
+        &lt;artifactId&gt;yy-yyy&lt;/artifactId&gt;
+        &lt;version&gt;x.y.z&lt;/version&gt;
+        &lt;scope/&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre>
+
+<p></project>
+```</p>
+
+<p>在这个目录下运行命令:<br/>
+<code>mvn -f download-dep-pom.xml dependency:copy-dependencies</code></p>
+
+<p>所有跟这个类库相关的直接和间接依赖的jar包都会下载到 ./target/dependency/下</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于serialVersionUID与序列化]]></title>
+    <link href="http://wq163.github.io/blog/2013/09/30/serialversionuid-and-serializable/"/>
+    <updated>2013-09-30T11:24:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/09/30/serialversionuid-and-serializable</id>
+    <content type="html"><![CDATA[<h2>java序列化trick and trap</h2>
+
+<p>厂内经常出现序列化对象版本不匹配问题，于是发本文说明一些序列化的注意点</p>
+
+<p><em>调用MQ、memcached、rpc等等涉及到远程通讯的都会经过序列化，虽然客户端透明的封装了细节，但底层是一定会有序列化操作的。因此了解序列化的注意事项是非常有必要的，可以避免误用导致潜在的风险</em></p>
+
+<ul>
+<li><p>通过网络传输的对象，必须实现Serializable接口，或者父类已经实现序列化接口。</p></li>
+<li><p>网络传输对象继承层次不宜过深，封装在内部的对象也不宜太复杂。（太复杂很容易出现某个相关的类没实现序列化接口，而导致整个对象无法序列化）</p>
+
+<ul>
+<li>一般long/int/String/Map/List/Array等常见类组成的对象就
+能解决问题</li>
+<li>最好不要在本应用对外的业务接口中传递或返回“由另一人或系统主导的业务对象"。因为你不能保证别人的对象版本会兼容，从而导致错误扩散</li>
+</ul>
+</li>
+<li><p>在接口定义上用的是父类，实际远程传输过去的是子类，反序列化不了的。特别是在rpc中客户端容易出现此问题</p></li>
+<li><p>远程接口上的参数、返回值类型、会抛出的异常类，都要实现序列化接口。并且server和client都要有对应的类。</p>
+
+<ul>
+<li>一个比较容易忽略的例子是:某服务接口可能会抛出某个运行时异常，但没有把这个异常类放入客户端中，一旦抛出此异常，客户端接收到此异常就会无法反序列化</li>
+</ul>
+</li>
+<li><p>ArrayList.subList()返回的List实现类是内部类型，不能序列化的，通过网络传输会出错。</p></li>
+<li><p>ArrayList经过网络传输后，里面的元素顺序可能不一样</p></li>
+<li><p>网络传输对象要有无参构造器（如果定义了有参构造器那就要显式定义一个无参构造起），因为机器是不知道传什么内容给有参构造器进行实例化，无参构造器不是public都没关系。没定义无参构造器，有些序列化方式会在底下生成无参构造器的方式才能解决问题。</p></li>
+<li><p>网络传输最好不要用enum类型，太强耦合，从网络一端传到另一端，对方可能还是旧版本而识别不了。</p>
+
+<ul>
+<li>Enum 常量的序列化不同于普通的 serializable 或 externalizable 对象。enum 常量的序列化形式只包含其名称；常量的字段值不被传送。为了序列化 enum 常量，ObjectOutputStream 需要写入由常量的名称方法返回的字符串。</li>
+</ul>
+</li>
+<li><p>不需通过网络传输的field用transient定义，但有些json序列化类库是不会区别对待这种field</p></li>
+<li><p>有些序列化类库，遇到反序列化不了的类，会反序列化成Map，但会在使用时遇到class cast异常。</p></li>
+<li><p>同一应用不要有同package同名的类，可能隐藏在同名/不同名/不同版本的jar中。</p></li>
+</ul>
+
+
+<h2>serialVersionUID</h2>
+
+<ul>
+<li><p><font color="red">用于网络传输的对象，第一次上线使用时，就一定要设定serialVersionUID，不要不顾编译警告</font></p>
+
+<ul>
+<li><p>NOTE: 网络对象的匹配，除了靠类名，还靠serialVersionUID，serialVersionUID在《Java语言规范》有固定算法，<u><strong>跟各field的定义相关，如果没有显式赋值，虽然看不见，但会底下会默认算出一个进行网络传输。</strong></u></p></li>
+<li><p><font color="red">如果没有显式赋值，在看不见觉察不到的情况下，在你增减了field/修改了定义的情况下，serialVersionUID已被改变，这时网络两端就对接不上而悲剧了。<br/>
+没定义serialVersionUID，而又发生了serialVersionUID变化，网络两端只有所有机器都停掉，并且先后起有顺序时，才能不出丝毫差错。</font></p></li>
+</ul>
+</li>
+<li><p>最好不要用用1L作为serialVersionUID。0L对于java enum的序列化有特殊意义。</p></li>
+<li><p>没赋值serialVersionUID 只是警告，不是错误，造成没设定serialVersionUID，网络两端上线运行一段时间也感觉正常。如果再增减修改field，没赋值好serialVersionUID，网络两端就不匹配。</p>
+
+<ul>
+<li>算出旧版本的serialVersionUID（使用serialver或eclipse），设置到新版本的代码中</li>
+</ul>
+</li>
+</ul>
+
+
+<p><em>本文大部分内容取自前同事的分享资料，作了少许修改，<a href="http://lokki.iteye.com/blog/1134482">外网地址</a></em></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[一个java内存泄漏的排查案例]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/25/fullgc/"/>
+    <updated>2013-07-25T21:33:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/25/fullgc</id>
+    <content type="html"><![CDATA[<p>这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。<br/>
+下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
+<em>（以便新人参考和自己回顾）</em></p>
+
+<h2>初步的现象</h2>
+
+<p>业务系统消费MQ中消息速度变慢，积压了200多万条消息，通过jstat观察到业务系统fullgc比较频繁,到最后干脆OOM了：<br/>
+<img src="/static/gc.png" alt="" /></p>
+
+<h2>进一步分析</h2>
+
+<p> <strong>既然知道了内存使用存在问题，那么就要知道是哪些对象占用了大量内存.</strong><br/>
+很多人都会想到把堆dump下来再用MAT等工具进行分析，但dump堆要花较长的时间，并且文件巨大，再从服务器上拖回本地导入工具，这个过程太折腾不到万不得已最好别这么干。</p>
+
+<p>可以用更轻量级的在线分析，用jmap查看存活的对象情况（jmap -histo:live [pid]），可以看出HashTable中的元素有5000多万，占用内存大约1.5G的样子：<br/>
+<img src="/static/jmap.png" alt="" /></p>
+
+<h2>定位到代码</h2>
+
+<p><strong>现在已经知道了是HashTable的问题，那么就要定位出什么代码引起的</strong></p>
+
+<p>接下来自然要看看是什么代码往HashTable里疯狂的put数据，于是用神器btrace跟踪Hashtable.put调用的堆栈。<br/>
+首先写btrace脚本TracingHashTable.java：</p>
+
+<pre><code>import com.sun.btrace.annotations.*;
+import static com.sun.btrace.BTraceUtils.*;
+
+@BTrace
+public class TracingHashTable {
+        /*指明要查看的方法，类*/
+        @OnMethod(
+            clazz="java.util.Hashtable",
+            method="put",
+            location=@Location(Kind.RETURN))
+        public static void traceExecute(@Self java.util.Hashtable object){
+                println("调用堆栈！！");
+                jstack();
+        }
+}
+</code></pre>
+
+<p>然后运行：
+bin/btrace -cp build 4947 TracingHashTable.java  <br/>
+看到有大量类似下图的调用堆栈<br/>
+<img src="/static/btrace.png" alt="" /></p>
+
+<p>可以看出是在接收到消息后查询入库的代码造成的，业务方法调用ibatis再到mysql jdbc驱动执行statement时put了大量的属性到HashTable中。</p>
+
+<p>通过以上排查已基本定位了由那块代码引起的，接下来就是打开代码工程进行白盒化改造了，对相应代码进行优化（不在本文范围内了。几个图中的pid不一致就别纠结了，有些是系统重启过再截图的）.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[避免jar依赖冲突的一种办法]]></title>
+    <link href="http://wq163.github.io/blog/2013/07/12/solution-of-dependency-conflicts/"/>
+    <updated>2013-07-12T14:21:00+08:00</updated>
+    <id>http://wq163.github.io/blog/2013/07/12/solution-of-dependency-conflicts</id>
+    <content type="html"><![CDATA[<p>  java中的依赖冲突问题一直比较头疼，特别是做公用包给其他系统用的时候，现在都不敢引入太多的依赖，基本上每次都要帮别人解决依赖冲突的问题，非常麻烦。</p>
+
+<p>  特别是碰到一些老系统还不是用maven管理的，人家用你的一个功能还要拷一堆jar包过去，然后排出哪些包在系统中已经有了，版本是否兼容等问题，非常蛋疼。为了方便人家使用就想把所有依赖打成一个jar包提供出去，但这样潜在的依赖冲突问题就会更严重，以后出现冲突时都不知道哪个jar包含了冲突的类。</p>
+
+<p>  更不想引入OSGi这种重量级的东西来隔离依赖。</p>
+
+<h2>一种解决方法</h2>
+
+<p>  尝试了多种途径后，发现还是用maven-shade-plugin的relocation方式比较能够满足需要，对于提供基础类库的场景下比较友好。</p>
+
+<p>  原理就是可能把依赖的class重命名包路径，并打包到一个jar中。maven-shade-plugin主要帮我们做了三件事情：</p>
+
+<ul>
+<li>把依赖的class重新放到指定的包下；</li>
+<li>改写相关class的字节码，对应于重定义的包路径；</li>
+<li>把相关依赖的class打进一个jar包；</li>
+</ul>
+
+
+<p>  这样我们对外提供一个jar包就可以了，显得非常干净，依赖的类被定义到指定的包路径中（比如以当前项目路径为前缀），可以避免跟使用者系统的包冲突。</p>
+
+<p>  有时候我们并不希望把所有的依赖都打到一个包中，只想把一部分容易引起冲突的依赖重定义包路径后包含进来，幸运的是maven-shade-plugin很容易做到，并且会把要发布到maven库的pom.xml中的依赖关系都自动改写掉。（通过配置artifactSet中的include和exclude来指定要包含和排除的依赖）</p>
+
+<h2>简单例子</h2>
+
+<p>比如我们有这么一个需求：</p>
+
+<ul>
+<li>假设commons-collections这个包非常容易跟其他系统引起冲突，我们想把它重定义路径后包含到主jar包中；</li>
+<li>假设我们认为mapdb这个类库一般不会跟别人冲突，不想把它打进主jar包里;</li>
+</ul>
+
+
+<p>  在pom.xml中定义plugin:</p>
+
+<pre><code>    &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.1&lt;/version&gt;
+            &lt;executions&gt;
+                &lt;execution&gt;
+                    &lt;phase&gt;package&lt;/phase&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;shade&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;configuration&gt;
+                        &lt;shadedArtifactAttached&gt;false&lt;/shadedArtifactAttached&gt;
+                        &lt;!--&lt;shadedClassifierName&gt;standalone&lt;/shadedClassifierName&gt;--&gt;
+                        &lt;!--&lt;createDependencyReducedPom&gt;true&lt;/createDependencyReducedPom&gt;--&gt;
+                        &lt;!--&lt;shadedArtifactId&gt;jconvert-pinyin-standalone&lt;/shadedArtifactId&gt;--&gt;
+                        &lt;!--&lt;shadeSourcesContent&gt;true&lt;/shadeSourcesContent&gt;--&gt;
+                        &lt;createSourcesJar&gt;true&lt;/createSourcesJar&gt;
+                        &lt;artifactSet&gt;
+                            &lt;excludes&gt;
+                                &lt;exclude&gt;org.mapdb:*&lt;/exclude&gt;
+                            &lt;/excludes&gt;
+                        &lt;/artifactSet&gt;
+                        &lt;relocations&gt;
+                            &lt;relocation&gt;
+                                &lt;pattern&gt;org.apache.commons.collections&lt;/pattern&gt;
+                                &lt;shadedPattern&gt;com.mycompany.myproject.org.apache.commons.collections&lt;/shadedPattern&gt;
+                            &lt;/relocation&gt;
+                        &lt;/relocations&gt;
+                    &lt;/configuration&gt;
+                &lt;/execution&gt;
+            &lt;/executions&gt;
+    &lt;/plugin&gt;
+</code></pre>
+
+<p>其中shadedArtifactAttached设为false,表示把shade过的jar作为项目默认的包（发布到maven库时也是shade后的包,发布上去的pom也是改写过的）。如果设为true,则默认的包还是不变,会生成一个独立的shade后的包(这样可以提供2种格式的包,比如让maven工程用户依赖普通的包,非maven用户使用shade过的包)。<br/>
+<em>其他详细的参数设置参考 <a href="http://maven.apache.org/plugins/maven-shade-plugin/">maven-shade-plugin官网</a> :</em></p>
+
+<h2>潜在的问题</h2>
+
+<p>如果第三方包中有反射相关的代码，则shade后可能出现不能正常工作，所以要仔细检查确保不会出现问题</p>
+]]></content>
+  </entry>
+  
+</feed>

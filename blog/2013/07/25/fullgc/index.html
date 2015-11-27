@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>一个java内存泄漏的排查案例 - JenWang's blog</title>
+  <meta name="author" content="jenwang">
+
+  
+  <meta name="description" content="这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。
+下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
+（以便新人参考和自己回顾） 初步的现象 业务系统消费MQ中消息速度变慢，积压了200多万条消息， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://wq163.github.io/blog/2013/07/25/fullgc">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="JenWang's blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="javascripts/libs/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32197227-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">JenWang's blog</a></h1>
+  
+    <h2>据说界面一定要丑陋.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss email">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+    <li><a href="wq163@163.com" rel="subscribe-email" title="subscribe via email">Email</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:wq163.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">一个java内存泄漏的排查案例</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-25T21:33:00+08:00" pubdate data-updated="true">Jul 25<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>这是个比较典型的java内存使用问题，定位过程也比较直接，但对新人还是有点参考价值的，所以就纪录了一下。<br/>
+下面介绍一下在不了解系统代码的情况下，如何一步步分析和定位到具体代码的排查过程
+<em>（以便新人参考和自己回顾）</em></p>
+
+<h2>初步的现象</h2>
+
+<p>业务系统消费MQ中消息速度变慢，积压了200多万条消息，通过jstat观察到业务系统fullgc比较频繁,到最后干脆OOM了：<br/>
+<img src="/static/gc.png" alt="" /></p>
+
+<h2>进一步分析</h2>
+
+<p> <strong>既然知道了内存使用存在问题，那么就要知道是哪些对象占用了大量内存.</strong><br/>
+很多人都会想到把堆dump下来再用MAT等工具进行分析，但dump堆要花较长的时间，并且文件巨大，再从服务器上拖回本地导入工具，这个过程太折腾不到万不得已最好别这么干。</p>
+
+<p>可以用更轻量级的在线分析，用jmap查看存活的对象情况（jmap -histo:live [pid]），可以看出HashTable中的元素有5000多万，占用内存大约1.5G的样子：<br/>
+<img src="/static/jmap.png" alt="" /></p>
+
+<h2>定位到代码</h2>
+
+<p><strong>现在已经知道了是HashTable的问题，那么就要定位出什么代码引起的</strong></p>
+
+<p>接下来自然要看看是什么代码往HashTable里疯狂的put数据，于是用神器btrace跟踪Hashtable.put调用的堆栈。<br/>
+首先写btrace脚本TracingHashTable.java：</p>
+
+<pre><code>import com.sun.btrace.annotations.*;
+import static com.sun.btrace.BTraceUtils.*;
+
+@BTrace
+public class TracingHashTable {
+        /*指明要查看的方法，类*/
+        @OnMethod(
+            clazz="java.util.Hashtable",
+            method="put",
+            location=@Location(Kind.RETURN))
+        public static void traceExecute(@Self java.util.Hashtable object){
+                println("调用堆栈！！");
+                jstack();
+        }
+}
+</code></pre>
+
+<p>然后运行：
+bin/btrace -cp build 4947 TracingHashTable.java  <br/>
+看到有大量类似下图的调用堆栈<br/>
+<img src="/static/btrace.png" alt="" /></p>
+
+<p>可以看出是在接收到消息后查询入库的代码造成的，业务方法调用ibatis再到mysql jdbc驱动执行statement时put了大量的属性到HashTable中。</p>
+
+<p>通过以上排查已基本定位了由那块代码引起的，接下来就是打开代码工程进行白盒化改造了，对相应代码进行优化（不在本文范围内了。几个图中的pid不一致就别纠结了，有些是系统重启过再截图的）.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">jenwang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-25T21:33:00+08:00" pubdate data-updated="true">Jul 25<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/javaji-zhu/'>java技术</a>, <a class='category' href='/blog/categories/gu-zhang-pai-cha/'>故障排查</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/07/16/leiningen-profiles/" title="Previous Post: Leiningen的profiles.clj不生效？">&laquo; Leiningen的profiles.clj不生效？</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/09/30/serialversionuid-and-serializable/" title="Next Post: 关于serialVersionUID与序列化">关于serialVersionUID与序列化 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>About Me</h1>
+  <p>非著名IT从业者，曾经就职于淘宝java中间件团队，现为供职于中国电信天翼阅读基地.</p>
+</section>
+
+<section>
+  <h1>新浪微博</h1>
+  <ul id="weibo">
+    <li>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=1&ptype=1&speed=300&skin=1&isTitle=0&noborder=0&isWeibo=1&isFans=1&uid=1951571225&verifier=bbf78df1&dpc=1"></iframe>
+</li>
+  </ul>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/03/27/mvn-depencies-download/">如何一次性下载某个类库依赖的所有jar包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/09/30/serialversionuid-and-serializable/">关于serialVersionUID与序列化</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/25/fullgc/">一个java内存泄漏的排查案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/16/leiningen-profiles/">Leiningen的profiles.clj不生效？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/12/java-microbenchmark/">关于Java Microbenchmark的一点记录</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+ <li class='category'><a href='/blog/categories/c1/'>c1 (2)</a></li>
+<li class='category'><a href='/blog/categories/c2/'>c2 (1)</a></li>
+<li class='category'><a href='/blog/categories/clojure/'>clojure (1)</a></li>
+<li class='category'><a href='/blog/categories/java技术/'>java技术 (4)</a></li>
+<li class='category'><a href='/blog/categories/old_blog/'>old_blog (12)</a></li>
+<li class='category'><a href='/blog/categories/中文测试分类/'>中文测试分类 (1)</a></li>
+<li class='category'><a href='/blog/categories/技术/'>技术 (13)</a></li>
+<li class='category'><a href='/blog/categories/故障排查/'>故障排查 (1)</a></li>
+
+ </ul>
+</section>
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/wq163">@wq163</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'wq163',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - jenwang -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
