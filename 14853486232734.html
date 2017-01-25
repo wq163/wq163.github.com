@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="atom.xml" rel="alternate" title="jenwang.me" type="application/atom+xml">
+    <title> 
+	  
+  	一个使用本地缓存引起的线程阻塞问题 - jenwang.me
+  	
+  	</title>
+    <link href="asset/css/bootstrap.min.css" rel="stylesheet">
+    <link href="asset/css/style.css" rel="stylesheet">
+    <script src="asset/js/jquery.min.js"></script>
+    <script src="asset/js/bootstrap.min.js"></script>
+    <script src="asset/js/docs.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+	<link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<script>hljs.initHighlightingOnLoad();</script>
+    <!--[if lt IE 9]>
+      <script src="asset/js/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <!-- <a class="blog-nav-item" id="menu-index" href="index.html">首页</a> -->
+          <!-- <a class="blog-nav-item" id="menu-help" href="help.html">文档</a>
+          <a class="blog-nav-item" id="menu-blog" href="all.html">博客</a>
+          <a class="blog-nav-item" id="menu-about" href="about.html">关于</a> -->
+          
+          <a class="blog-nav-item" target="_self" href="index.html">首页</a>
+          
+          <a class="blog-nav-item" target="_self" href="archives.html">归档</a>
+          
+          <a class="blog-nav-item" target="_blank" href="aboutme.html">关于我</a>
+          
+          <a class="blog-nav-item" style="float:right;" href="#">English</a>
+        </nav>
+      </div>
+    </div>
+    
+    <script type="text/javascript">
+      $(function(){
+      	$('#menu-blog').addClass('active');
+      });
+      </script>
+   <div class="container" id="content-wrap">
+
+      <div class="row">
+
+        <div class="col-sm-8 blog-main">
+			
+					<div class="blog-post">
+			            <h2 class="blog-post-title">一个使用本地缓存引起的线程阻塞问题</h2>
+			            <p class="blog-post-meta">2014/7/23 
+				            &nbsp;posted in 
+							
+							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							 
+							 
+			            </p>
+			            <div class="content-responsive">
+			            <h2 id="toc_0">现象</h2>
+
+<p>有同事的java系统运行一段时间后发生请求阻塞的情况(返回504)，从仅有的内存dump文件看，大部分线程都阻塞在了一个本地缓存（jodd cache）的读锁上了（ReentrantReadWriteLock$ReadLock.lock）。</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_1">排查过程</h2>
+
+<h3 id="toc_2">阶段一</h3>
+
+<p>本能的反应应该是写锁被占用了才会出现这个情况。于是开始以&quot;WriteLock.lock&quot;为关键字搜索写锁，怎么也搜不到。其实搜不到是正常的，因为写锁已经被占有了,当然不可能停在WriteLock.lock上了。</p>
+
+<p>开始翻jodd LRUCache代码，发现是用LinkedHashMap实现的，在dump文件上搜索LinkedHashMap写操作的代码，果然发现有一个线程是正在执行LRUCache的put方法，代码停留在LRUCache的pruneCache方法中(就是在put的时候cache满了回收一些位置)：</p>
+
+<pre><code>protected int pruneCache() {
+    if (isPruneExpiredActive() == false) {
+        return 0;
+    }
+    int count = 0;
+    //cacheMap就是一个LinkedHashMap的实例
+    Iterator&lt;CacheObject&lt;K,V&gt;&gt; values = cacheMap.values().iterator();
+    while (values.hasNext()) {
+        CacheObject&lt;K,V&gt; co = values.next();
+        if (co.isExpired() == true) {
+            values.remove();
+            count++;
+        }
+    }
+    return count;
+}
+    
+</code></pre>
+
+<p>到这里就证明了最初的猜想是对的，写锁被占了才导致那么多读线程被堵住。  </p>
+
+<blockquote>
+<p>可以看出 jodd 使用 LinkedHashMap + ReentrantReadWriteLock 实现LRUCache是有性能问题的，一个写操作会锁住整个缓存，阻塞所有读操作。<u>这是第一个问题</u>。</p>
+</blockquote>
+
+<h3 id="toc_3">阶段二</h3>
+
+<p>显然不能到此就结束了，要有更高的追求，继续分析LRUCache的具体实现，主要逻辑就是put时加上写锁，get时加上读锁，内部是一个开启了accessOrder的LinkedHashMap作为数据存储。</p>
+
+<p>初看也貌似很正常没啥问题啊。其实开启了accessOrder的LinkedHashMap 多线程get是会有并发问题的，因为会把get到的元素移到双向链表最前面，看LinkedHashMap的get方法： </p>
+
+<pre><code>public V get(Object key) {
+    Entry&lt;K,V&gt; e = (Entry&lt;K,V&gt;)getEntry(key);
+    if (e == null)
+        return null;
+    e.recordAccess(this);
+    return e.value;
+} 
+
+void recordAccess(HashMap&lt;K,V&gt; m) {
+    LinkedHashMap&lt;K,V&gt; lm = (LinkedHashMap&lt;K,V&gt;)m;
+    if (lm.accessOrder) {
+        lm.modCount++;
+        remove();
+        addBefore(lm.header);
+    }
+}
+</code></pre>
+
+<blockquote>
+<p>可以看到这里改变链表结构是没有任何并发控制的，因此LinkedHashMap并发get是不OK的，jodd给get加了读锁是存在并发问题的（还不明白的请自行学习ReentrantReadWriteLock机制）。<u>这是第二个问题</u>。</p>
+</blockquote>
+
+<p>可以想象下高并发时链表被破坏成各种奇形怪状的情况（比较费脑力，我就不描述了），完全有可能让上面pruneCache（）方法中的values.hasNext()永远为true。这次刚好是停在LRUCache#pruneCache中，下次就有可能停在LinkedHashMap#transfer上，一旦写锁里面的代码块hang住，所有读线程全部堵住，而且这种问题出现几率不等，很难模拟重现。</p>
+
+<h2 id="toc_4">JUC Bug</h2>
+
+<p>另外顺便提一下某些早期JDK版本中存在的BUG  </p>
+
+<p>ReentrantReadWriteLock可能在没有任何线程持有锁的情况下被hang住：<br/>
+<a href="http://bugs.sun.com/view_bug.do?bug_id=6822370">http://bugs.sun.com/view_bug.do?bug_id=6822370</a><br/>
+<a href="http://bugs.sun.com/view_bug.do?bug_id=6903249">http://bugs.sun.com/view_bug.do?bug_id=6903249</a></p>
+
+<h2 id="toc_5">小结</h2>
+
+<ul>
+<li>不要使用Jodd的cache</li>
+<li>推荐使用gauva的cache<br/>
+基于<a href="https://code.google.com/p/concurrentlinkedhashmap/">concurrentlinkedhashmap</a>实现，现已整合到guava里了</li>
+<li>不可轻信开源组件，使用前一定要先研究透彻</li>
+</ul>
+
+			            </div>
+						
+			           
+			          </div><!-- /.blog-post -->
+			<div class="share-comment">
+			
+			</div>
+
+        </div><!-- /.blog-main -->
+
+       <!-- slider start -->  		<div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+
+          <div class="sidebar-module">
+            <h4>关于</h4>
+            <p><a target="_blank" href="atom.xml">RSS</a></p>
+                        
+
+          </div>
+          <div class="sidebar-module">
+            <h4>分类</h4>
+            
+            <ol class="list-unstyled">
+	      <li class="post">
+	        <a href="%E6%8A%80%E6%9C%AF.html">技术&nbsp;(25)</a>
+	        
+	        
+	        
+	      </li>
+	  
+            <ol class="list-unstyled">
+	      <li class="post">
+	        <a href="%E8%AE%AE%E8%AE%BA.html">议论&nbsp;(1)</a>
+	        
+	        
+	        
+	      </li>
+	   
+            </ol>
+          </div>
+
+          <div class="sidebar-module">
+            <h4>最近文章</h4>
+            
+	  
+	      
+		      
+		        <a href="14851540366764.html">我和工具</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14850506793674.html">如何评价一个清闲的管理者</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232734.html">一个使用本地缓存引起的线程阻塞问题</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232530.html">如何一次性下载某个类库依赖的所有jar包"</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232320.html">关于serialVersionUID与序列化"</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232080.html">一个java内存泄漏的排查案例</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231882.html">Leiningen的profiles.clj不生效？</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231695.html">避免jar依赖冲突的一种办法</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231532.html">关于Java Microbenchmark的一点记录</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231362.html">jenkins集成caliper"</a><br />
+		      
+	     
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	   
+
+          </div>
+         
+        </div><!-- /.blog-sidebar -->
+
+
+      </div><!-- /.row -->
+
+    </div><!-- /.container -->
+
+  <footer class="blog-footer">
+      <p>Copyright &copy; 2017
+Powered by <a target="_blank" href="http://jenwang.me">jenwang.me</a> &nbsp;&nbsp; Generated by MWeb<a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp;
+Theme by <a target="_blank" href="http://getbootstrap.com">Bootstrap</a>、<a target="_blank" href="https://twitter.com/mdo">@mdo</a>&nbsp;&nbsp; 
+.</p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="asset/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+  </body>
+</html>

@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="atom.xml" rel="alternate" title="jenwang.me" type="application/atom+xml">
+    <title> 
+	  
+  	备份新浪微博收藏夹 - jenwang.me
+  	
+  	</title>
+    <link href="asset/css/bootstrap.min.css" rel="stylesheet">
+    <link href="asset/css/style.css" rel="stylesheet">
+    <script src="asset/js/jquery.min.js"></script>
+    <script src="asset/js/bootstrap.min.js"></script>
+    <script src="asset/js/docs.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+	<link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<script>hljs.initHighlightingOnLoad();</script>
+    <!--[if lt IE 9]>
+      <script src="asset/js/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <!-- <a class="blog-nav-item" id="menu-index" href="index.html">首页</a> -->
+          <!-- <a class="blog-nav-item" id="menu-help" href="help.html">文档</a>
+          <a class="blog-nav-item" id="menu-blog" href="all.html">博客</a>
+          <a class="blog-nav-item" id="menu-about" href="about.html">关于</a> -->
+          
+          <a class="blog-nav-item" target="_self" href="index.html">首页</a>
+          
+          <a class="blog-nav-item" target="_self" href="archives.html">归档</a>
+          
+          <a class="blog-nav-item" target="_blank" href="aboutme.html">关于我</a>
+          
+          <a class="blog-nav-item" style="float:right;" href="#">English</a>
+        </nav>
+      </div>
+    </div>
+    
+    <script type="text/javascript">
+      $(function(){
+      	$('#menu-blog').addClass('active');
+      });
+      </script>
+   <div class="container" id="content-wrap">
+
+      <div class="row">
+
+        <div class="col-sm-8 blog-main">
+			
+					<div class="blog-post">
+			            <h2 class="blog-post-title">备份新浪微博收藏夹</h2>
+			            <p class="blog-post-meta">2012/6/8 
+				            &nbsp;posted in 
+							
+							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							 
+							 
+			            </p>
+			            <div class="content-responsive">
+			            <p>由于要定期对收藏的微博进行整理并删除，又想保留一份原始数据，于是想到了备份一下，在网上找了找没有满意的就自己写了一个，顺便体验一下微博开放的api.</p>
+
+<span id="more"></span><!-- more -->
+
+<p>这个小程序可以备份收藏微博的原始json格式的数据,也可以保存成易读的文本格式，还可以根据自己的需要扩展保存任何想要的格式(比如excel、html等我就不一一实现了)</p>
+
+<p>程序代码放在github上用于学习交流，可以<a href="https://github.com/wq163/weibobak">点击这里查看</a>源代码和文档，或者<a href="/static/weibobak.tar.gz">binary包</a></p>
+
+<p>{% render_partial static/weibobak-README.md %}</p>
+
+<hr/>
+
+<p>下面记录一下使用api几个点，自己的体会，也不一定是最好的方法：<br/><br/>
+(以下以我用微博的java sdk写命令行方式的应用来说明)</p>
+
+<p><strong>1. 调用api的准备工作</strong><br/><br/>
+首先要在微博开放平台页面上申请并创建一个应用，完成后会分配给应用App Key和App Secret，这两个东西在程序中要用到.就是在Config.properties里 client_ID和client_SERCRET这两个属性</p>
+
+<p><strong>2. 如何在命令行应用里进行oauth2认证</strong><br/><br/>
+典型的web应用方式是用户点击后跳转到新浪的账号验证页面，输入账号验证通过后回调到应用的页面并在url中带上code值，然后我们用这个code获取AccessToken，这个AccessToken就是授权我们访问数据的凭证。</p>
+
+<p>按照SDK中提供的api是在浏览器中进行交互的，而我只想写个简单的java命令行应用，不想弄web应用。命令行中调用浏览器进行认证后，我的程序无法获得返回的code，也就没法获取到AccessToken(我可不想人工介入,我只想输入自己的微博账号就搞定)。于是想到程序中模拟浏览器请求（也就是页面中输入账号后提交的那一步），通过抓包获知提交请求所需的参数主要有这么几个:  </p>
+
+<pre><code class="language-java">PostParameter[] params =
+     new PostParameter[] { new PostParameter(&quot;withOfficalFlag&quot;, 0),
+                          new PostParameter(&quot;response_type&quot;, &quot;code&quot;),
+                          new PostParameter(&quot;redirect_uri&quot;, Config.getValue(&quot;redirect_URI&quot;).trim()),
+                          new PostParameter(&quot;client_id&quot;, Config.getValue(&quot;client_ID&quot;).trim()),
+                          new PostParameter(&quot;action&quot;, &quot;submit&quot;),
+                          new PostParameter(&quot;userId&quot;, Config.getValue(&quot;userId&quot;).trim()),
+                          new PostParameter(&quot;passwd&quot;, Config.getValue(&quot;passwd&quot;).trim()),
+                          new PostParameter(&quot;isLoginSina&quot;, &quot;&quot;), new PostParameter(&quot;regCallback&quot;, &quot;&quot;),
+                          new PostParameter(&quot;state&quot;, &quot;&quot;), new PostParameter(&quot;from&quot;, &quot;&quot;) };
+</code></pre>
+
+<p>并且要增加http header：</p>
+
+<pre><code class="language-java">postMethod.addRequestHeader(&quot;Referer&quot;,
+        &quot;https://api.weibo.com/oauth2/authorize?client_id=2671507095&amp;redirect_uri=http://jenwang.org&amp;response_type=code&quot;);
+postMethod.addRequestHeader(&quot;User-Agent&quot;,
+        &quot;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.151 Safari/535.19&quot;);
+                
+</code></pre>
+
+			            </div>
+						
+			           
+			          </div><!-- /.blog-post -->
+			<div class="share-comment">
+			
+			</div>
+
+        </div><!-- /.blog-main -->
+
+       <!-- slider start -->  		<div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+
+          <div class="sidebar-module">
+            <h4>关于</h4>
+            <p><a target="_blank" href="atom.xml">RSS</a></p>
+                        
+
+          </div>
+          <div class="sidebar-module">
+            <h4>分类</h4>
+            
+            <ol class="list-unstyled">
+	      <li class="post">
+	        <a href="%E6%8A%80%E6%9C%AF.html">技术&nbsp;(25)</a>
+	        
+	        
+	        
+	      </li>
+	  
+            <ol class="list-unstyled">
+	      <li class="post">
+	        <a href="%E8%AE%AE%E8%AE%BA.html">议论&nbsp;(1)</a>
+	        
+	        
+	        
+	      </li>
+	   
+            </ol>
+          </div>
+
+          <div class="sidebar-module">
+            <h4>最近文章</h4>
+            
+	  
+	      
+		      
+		        <a href="14851540366764.html">我和工具</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14850506793674.html">如何评价一个清闲的管理者</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232734.html">一个使用本地缓存引起的线程阻塞问题</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232530.html">如何一次性下载某个类库依赖的所有jar包"</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232320.html">关于serialVersionUID与序列化"</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232080.html">一个java内存泄漏的排查案例</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231882.html">Leiningen的profiles.clj不生效？</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231695.html">避免jar依赖冲突的一种办法</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231532.html">关于Java Microbenchmark的一点记录</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231362.html">jenkins集成caliper"</a><br />
+		      
+	     
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	   
+
+          </div>
+         
+        </div><!-- /.blog-sidebar -->
+
+
+      </div><!-- /.row -->
+
+    </div><!-- /.container -->
+
+  <footer class="blog-footer">
+      <p>Copyright &copy; 2017
+Powered by <a target="_blank" href="http://jenwang.me">jenwang.me</a> &nbsp;&nbsp; Generated by MWeb<a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp;
+Theme by <a target="_blank" href="http://getbootstrap.com">Bootstrap</a>、<a target="_blank" href="https://twitter.com/mdo">@mdo</a>&nbsp;&nbsp; 
+.</p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="asset/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+  </body>
+</html>

@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="atom.xml" rel="alternate" title="jenwang.me" type="application/atom+xml">
+    <title> 
+	  
+  	Leiningen的profiles.clj不生效？ - jenwang.me
+  	
+  	</title>
+    <link href="asset/css/bootstrap.min.css" rel="stylesheet">
+    <link href="asset/css/style.css" rel="stylesheet">
+    <script src="asset/js/jquery.min.js"></script>
+    <script src="asset/js/bootstrap.min.js"></script>
+    <script src="asset/js/docs.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+	<link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<script>hljs.initHighlightingOnLoad();</script>
+    <!--[if lt IE 9]>
+      <script src="asset/js/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <!-- <a class="blog-nav-item" id="menu-index" href="index.html">首页</a> -->
+          <!-- <a class="blog-nav-item" id="menu-help" href="help.html">文档</a>
+          <a class="blog-nav-item" id="menu-blog" href="all.html">博客</a>
+          <a class="blog-nav-item" id="menu-about" href="about.html">关于</a> -->
+          
+          <a class="blog-nav-item" target="_self" href="index.html">首页</a>
+          
+          <a class="blog-nav-item" target="_self" href="archives.html">归档</a>
+          
+          <a class="blog-nav-item" target="_blank" href="aboutme.html">关于我</a>
+          
+          <a class="blog-nav-item" style="float:right;" href="#">English</a>
+        </nav>
+      </div>
+    </div>
+    
+    <script type="text/javascript">
+      $(function(){
+      	$('#menu-blog').addClass('active');
+      });
+      </script>
+   <div class="container" id="content-wrap">
+
+      <div class="row">
+
+        <div class="col-sm-8 blog-main">
+			
+					<div class="blog-post">
+			            <h2 class="blog-post-title">Leiningen的profiles.clj不生效？</h2>
+			            <p class="blog-post-meta">2013/7/16 
+				            &nbsp;posted in 
+							
+							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							 
+							 
+			            </p>
+			            <div class="content-responsive">
+			            <p>需求:<br/><br/>
+比如要自定义本地maven库的路径，又不想在project.clj中定义，因为每个人的本地路径不同，写在工程中不好。那么在profiles.clj中定义比较好：</p>
+
+<pre><code>{:user {:local-repo &quot;D:\\m2\\repository&quot;}}
+</code></pre>
+
+<p>当庆幸找到解决方法时，一运行发现根本没生效是件很扫兴的事。<br/>
+网上能找到的资料都告诉你profiles.clj这个文件是放在~/.lein/这个目录下的。</p>
+
+<p><strong>实际情况是：</strong> <br/>
+<code>如果自定义了LEIN_HOME的路径，那么profiles.clj就应该放在LEIN_HOME目录下，而不是~/.lein/下</code><br/><br/>
+否则不会生效，切记。 </p>
+
+			            </div>
+						
+			           
+			          </div><!-- /.blog-post -->
+			<div class="share-comment">
+			
+			</div>
+
+        </div><!-- /.blog-main -->
+
+       <!-- slider start -->  		<div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+
+          <div class="sidebar-module">
+            <h4>关于</h4>
+            <p><a target="_blank" href="atom.xml">RSS</a></p>
+                        
+
+          </div>
+          <div class="sidebar-module">
+            <h4>分类</h4>
+            
+            <ol class="list-unstyled">
+	      <li class="post">
+	        <a href="%E6%8A%80%E6%9C%AF.html">技术&nbsp;(25)</a>
+	        
+	        
+	        
+	      </li>
+	  
+            <ol class="list-unstyled">
+	      <li class="post">
+	        <a href="%E8%AE%AE%E8%AE%BA.html">议论&nbsp;(1)</a>
+	        
+	        
+	        
+	      </li>
+	   
+            </ol>
+          </div>
+
+          <div class="sidebar-module">
+            <h4>最近文章</h4>
+            
+	  
+	      
+		      
+		        <a href="14851540366764.html">我和工具</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14850506793674.html">如何评价一个清闲的管理者</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232734.html">一个使用本地缓存引起的线程阻塞问题</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232530.html">如何一次性下载某个类库依赖的所有jar包"</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232320.html">关于serialVersionUID与序列化"</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486232080.html">一个java内存泄漏的排查案例</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231882.html">Leiningen的profiles.clj不生效？</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231695.html">避免jar依赖冲突的一种办法</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231532.html">关于Java Microbenchmark的一点记录</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14853486231362.html">jenkins集成caliper"</a><br />
+		      
+	     
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	  
+	      
+	   
+
+          </div>
+         
+        </div><!-- /.blog-sidebar -->
+
+
+      </div><!-- /.row -->
+
+    </div><!-- /.container -->
+
+  <footer class="blog-footer">
+      <p>Copyright &copy; 2017
+Powered by <a target="_blank" href="http://jenwang.me">jenwang.me</a> &nbsp;&nbsp; Generated by MWeb<a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp;
+Theme by <a target="_blank" href="http://getbootstrap.com">Bootstrap</a>、<a target="_blank" href="https://twitter.com/mdo">@mdo</a>&nbsp;&nbsp; 
+.</p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="asset/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+  </body>
+</html>
