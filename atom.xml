@@ -4,7 +4,7 @@
   <title><![CDATA[jenwang.me]]></title>
   <link href="http://jenwang.me/atom.xml" rel="self"/>
   <link href="http://jenwang.me/"/>
-  <updated>2017-01-25T22:15:48+08:00</updated>
+  <updated>2017-01-26T09:52:02+08:00</updated>
   <id>http://jenwang.me/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -12,6 +12,26 @@
   </author>
   <generator uri="http://jenwang.me/">jenwang</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[茶书]]></title>
+    <link href="http://jenwang.me/14856967077187.html"/>
+    <updated>2017-01-29T21:31:47+08:00</updated>
+    <id>http://jenwang.me/14856967077187.html</id>
+    <content type="html"><![CDATA[
+<p>作者: [日] 冈仓天心 </p>
+
+<p><img src="media/14856967077187/14856968085208.jpg" alt=""/></p>
+
+<blockquote>
+<p>感想与摘录</p>
+</blockquote>
+
+<p>原以为是介绍喝茶知识的书，然而并不是。一直对日本诸多侘寂之美的设计颇为赞赏，简朴亲切而又实用摒弃任何多余的干扰，然而对于这种审美的根基一无所知，看完后又刷新了对日本的一些认知，对简约朴素的审美和文化之渊源有了全新的了解，甚是惊喜。<br/>
+译者的后记是本书不可忽视的篇章，更通透地解释了中日文化渊源和差异，视角非常有启发。中国艺术的背后主要是权力、审美的统治，而日本则是普通民众的力量，民艺运动通过改善民众的生活品质进而促进社会进步。日本茶道的建立是对这种审美统治的挑战，属于自己空间关系的审美而非复制中国的审美，我们总是提传统文化的保护却很少钻研传统文化的发展，传统不应该成为包袱，应该随时蜕去积攒千年的壳，关照事物纯粹的本质，没有创造无所谓传统，传统是创造的积淀。极为认同译者所言<code>中国没有茶道，中国有饮茶的方法</code>，近年来大陆的饮茶之风日盛，只是附庸风雅、软弱无力，是虚假和令人生厌的，没有文化的优雅是妖，再多的人声鼎沸也只能是繁华躁动且妖气弥漫。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[我和工具]]></title>
@@ -895,19 +915,6 @@ postMethod.addRequestHeader(&quot;User-Agent&quot;,
 <span id="more"></span><!-- more -->
 
 <p><img src="media/14853499457810/juc-CyclicBarrier.jpg" alt="juc-CyclicBarrie"/></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[title: "JUC代码浅析[5]——同步器AQS"]]></title>
-    <link href="http://jenwang.me/14853499457561.html"/>
-    <updated>2017-01-25T21:12:25+08:00</updated>
-    <id>http://jenwang.me/14853499457561.html</id>
-    <content type="html"><![CDATA[
-<span id="more"></span><!-- more -->
-
-<p><img src="media/14853499457561/juc-CountDownLatch.jpg" alt="juc-CountDownLatch"/></p>
 
 ]]></content>
   </entry>
