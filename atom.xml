@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[jenwang.me]]></title>
+  <title><![CDATA[jenwang的随想]]></title>
   <link href="http://jenwang.me/atom.xml" rel="self"/>
   <link href="http://jenwang.me/"/>
-  <updated>2017-01-26T09:52:02+08:00</updated>
+  <updated>2017-01-30T01:28:35+08:00</updated>
   <id>http://jenwang.me/</id>
   <author>
     <name><![CDATA[]]></name>
