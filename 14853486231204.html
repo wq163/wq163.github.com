@@ -57,6 +57,10 @@
         </nav>
       </div>
     </div>
+      
+      <div style="color:#ff0000; text-align:center; padding:8px;" class="bg-info site_notice">
+        新版博客升级完成
+      </div>
     
     <script type="text/javascript">
       $(function(){
@@ -165,7 +169,8 @@ system &quot;echo &#39;My Octopress Page is coming soon ^&amp;hellip;&#39; &gt; 
 			            <!-- add by jenwang -->
 			  			如有合作需求，烦请邮件：jenwang@foxmail.com<br>
 对于本博客某些话题感兴趣，希望进一步交流的，请加 qq 群：2825967<br>
-更多技术交流分享在圈子「架构杂谈」，跟老司机们聊聊互联网前沿技术、架构、工具、解决方案等
+更多技术交流分享在圈子<a href="https://wx.xiaomiquan.com/mweb/views/joingroup/join_group.html?group_id=1481521512&secret=8wo1oej6b3vc6w7wjxwlrp501xerm00u&extra=212b4fbd7449a0fe32b54e23917953c62f0efd76f9515c5c2368040d906f766d
+">「架构杂谈」</a>，跟老司机们聊聊互联网前沿技术、架构、工具、解决方案等
 			            </div>
 						
 			           
@@ -362,5 +367,20 @@ Theme by <a target="_blank" href="http://getbootstrap.com">Bootstrap</a>、<a ta
     <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
 <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1261177024'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/z_stat.php%3Fid%3D1261177024%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
   </body>
 </html>
