@@ -8,7 +8,7 @@
     <link href="atom.xml" rel="alternate" title="jenwang的随想" type="application/atom+xml">
     <title> 
 	  
-  	一个使用本地缓存引起的线程阻塞问题 - jenwang的随想
+  	合适 - jenwang的随想
   	
   	</title>
     <link href="asset/css/bootstrap.min.css" rel="stylesheet">
@@ -74,103 +74,128 @@
         <div class="col-sm-8 blog-main">
 			
 					<div class="blog-post">
-			            <h2 class="blog-post-title">一个使用本地缓存引起的线程阻塞问题</h2>
-			            <p class="blog-post-meta">2014/7/23 
+			            <h2 class="blog-post-title">合适</h2>
+			            <p class="blog-post-meta">2017/2/4 
 				            &nbsp;posted in 
 							
-							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							    <a class='category' href='%E8%AF%BB%E4%B9%A6.html'>读书</a>&nbsp;
 							 
 							 
 			            </p>
 			            <div class="content-responsive">
-			            <h2 id="toc_0">现象</h2>
+			            <p>作者: [日] 坂井丰贵 </p>
 
-<p>有同事的java系统运行一段时间后发生请求阻塞的情况(返回504)，从仅有的内存dump文件看，大部分线程都阻塞在了一个本地缓存（jodd cache）的读锁上了（ReentrantReadWriteLock$ReadLock.lock）。</p>
+<p><img src="media/14861916870975/14861921145666.jpg" alt="" style="width:150px;"/></p>
+
+<p>开始看到这本书其实挺惊讶的，有种见微知著的感觉，看上去如此平常简单的事情，竟然可以通过理论体系和算法得到更合理的解决，而不是凭感觉行事。那么日常中，我们一直采用无知落后的方式来做决策而不自知的有多少？</p>
+
+<p>深感市场设计的魅力，以及<code>为经济学家思维的层次感与创造力所折服</code>。制度和游戏规则设计绝不是件简单的事，有时甚至需要经过理论和公式的严密论证。良好的规则应该获得优化结果的同时还能防止策略性操作，使得表达真实意图和诚信的行为得到鼓励，消除碰运气和投机性而获利的可能。  </p>
+
+<p>以下记录本书的关键点，本书分三个部分，</p>
 
 <span id="more"></span><!-- more -->
 
-<h2 id="toc_1">排查过程</h2>
+<h2 id="toc_0">一、单边匹配问题</h2>
 
-<h3 id="toc_2">阶段一</h3>
+<p>例如“人与物”的匹配，只涉及一方的意愿表达。采用合适的算法改变组合可提高参与者的幸福度。<br/><br/>
+案例：房间置换、交换肾源及 TTC 算法。随着问题规模的增大，如果没有合适的算法，凭感觉行事想要获得最优解几乎不可能。TTC 算法的目的是要导出一个「强核配置」。强核配置是<strong>一定存在且一定唯一的</strong>。</p>
 
-<p>本能的反应应该是写锁被占用了才会出现这个情况。于是开始以&quot;WriteLock.lock&quot;为关键字搜索写锁，怎么也搜不到。其实搜不到是正常的，因为写锁已经被占有了,当然不可能停在WriteLock.lock上了。</p>
+<p><strong>强核配置</strong>：</p>
 
-<p>开始翻jodd LRUCache代码，发现是用LinkedHashMap实现的，在dump文件上搜索LinkedHashMap写操作的代码，果然发现有一个线程是正在执行LRUCache的put方法，代码停留在LRUCache的pruneCache方法中(就是在put的时候cache满了回收一些位置)：</p>
+<ol>
+<li>不存在「帕累托改进」的空间，也就是说不会使任何人处境变差的情况下还有余地让某个人的情况变好。</li>
+<li>不会发生「阻止」(block)，即满足个体合理性，不存在通过退出分配或私下协议而受益的可能。</li>
+<li>满足防策略性的，通过虚假报告隐瞒自己的偏好并不会获利。<br/></li>
+</ol>
 
-<pre><code>protected int pruneCache() {
-    if (isPruneExpiredActive() == false) {
-        return 0;
-    }
-    int count = 0;
-    //cacheMap就是一个LinkedHashMap的实例
-    Iterator&lt;CacheObject&lt;K,V&gt;&gt; values = cacheMap.values().iterator();
-    while (values.hasNext()) {
-        CacheObject&lt;K,V&gt; co = values.next();
-        if (co.isExpired() == true) {
-            values.remove();
-            count++;
-        }
-    }
-    return count;
-}
-    
-</code></pre>
+<p><em>以上经过公理性特征证明</em></p>
 
-<p>到这里就证明了最初的猜想是对的，写锁被占了才导致那么多读线程被堵住。  </p>
+<h2 id="toc_1">二、双边匹配问题</h2>
 
-<blockquote>
-<p>可以看出 jodd 使用 LinkedHashMap + ReentrantReadWriteLock 实现LRUCache是有性能问题的，一个写操作会锁住整个缓存，阻塞所有读操作。<u>这是第一个问题</u>。</p>
-</blockquote>
+<p>参与的双方都有偏好，如何实现“两情相悦”，保证匹配的稳定性是规则设计的关键。</p>
 
-<h3 id="toc_3">阶段二</h3>
+<p>案例，选课、招生及婚姻的稳定性、医生-医院的分配。比如高校招生，最好采用结果不受运气影响的公平公正的规则，有没有这样的方法呢？那就是由盖尔和沙普利所创的「延迟接受算法」。</p>
 
-<p>显然不能到此就结束了，要有更高的追求，继续分析LRUCache的具体实现，主要逻辑就是put时加上写锁，get时加上读锁，内部是一个开启了accessOrder的LinkedHashMap作为数据存储。</p>
+<p><strong>延迟接受算法</strong>：</p>
 
-<p>初看也貌似很正常没啥问题啊。其实开启了accessOrder的LinkedHashMap 多线程get是会有并发问题的，因为会把get到的元素移到双向链表最前面，看LinkedHashMap的get方法： </p>
+<h3 id="toc_2">一对一匹配</h3>
 
-<pre><code>public V get(Object key) {
-    Entry&lt;K,V&gt; e = (Entry&lt;K,V&gt;)getEntry(key);
-    if (e == null)
-        return null;
-    e.recordAccess(this);
-    return e.value;
-} 
+<ol>
+<li>满足「稳定匹配」。但跟单边匹配不同，双边匹配中「稳定匹配」不见得只有一个，导出的结果对于「选择的一方」是最佳的稳定匹配（对于「被选择方」不是最佳但并不意味着不稳定）。即使存在两个以上稳定匹配，它们的分配结果其实相差不远</li>
+<li>满足<strong>单边</strong>防止策略性。对于「选择的一方」表明自己真实偏好是上策，对于「被选择的一方」未必。很遗憾，理论上已证明不存在双边防策略性的分配方法</li>
+</ol>
 
-void recordAccess(HashMap&lt;K,V&gt; m) {
-    LinkedHashMap&lt;K,V&gt; lm = (LinkedHashMap&lt;K,V&gt;)m;
-    if (lm.accessOrder) {
-        lm.modCount++;
-        remove();
-        addBefore(lm.header);
-    }
-}
-</code></pre>
+<h3 id="toc_3">一对多匹配</h3>
 
-<blockquote>
-<p>可以看到这里改变链表结构是没有任何并发控制的，因此LinkedHashMap并发get是不OK的，jodd给get加了读锁是存在并发问题的（还不明白的请自行学习ReentrantReadWriteLock机制）。<u>这是第二个问题</u>。</p>
-</blockquote>
-
-<p>可以想象下高并发时链表被破坏成各种奇形怪状的情况（比较费脑力，我就不描述了），完全有可能让上面pruneCache（）方法中的values.hasNext()永远为true。这次刚好是停在LRUCache#pruneCache中，下次就有可能停在LinkedHashMap#transfer上，一旦写锁里面的代码块hang住，所有读线程全部堵住，而且这种问题出现几率不等，很难模拟重现。</p>
-
-<h2 id="toc_4">JUC Bug</h2>
-
-<p>另外顺便提一下某些早期JDK版本中存在的BUG  </p>
-
-<p>ReentrantReadWriteLock可能在没有任何线程持有锁的情况下被hang住：<br/>
-<a href="http://bugs.sun.com/view_bug.do?bug_id=6822370">http://bugs.sun.com/view_bug.do?bug_id=6822370</a><br/>
-<a href="http://bugs.sun.com/view_bug.do?bug_id=6903249">http://bugs.sun.com/view_bug.do?bug_id=6903249</a></p>
-
-<h2 id="toc_5">小结</h2>
+<p>例如医院有接收多个实习医生的名额。  </p>
 
 <ul>
-<li>不要使用Jodd的cache</li>
-<li>推荐使用gauva的cache<br/>
-基于<a href="https://code.google.com/p/concurrentlinkedhashmap/">concurrentlinkedhashmap</a>实现，现已整合到guava里了</li>
-<li>不可轻信开源组件，使用前一定要先研究透彻</li>
+<li>「单边防策略性」仅在「一」方作为「选择方」是成立，「多」方作为「选择方」则不成立。</li>
+<li>择校匹配，从「波士顿」机制的弊端，中国高考志愿类似的机制，申请人气高的学校风险极高，运气成分过重引发的不满（例如，“比我排名靠后的去了我想去的学校，而我没被录取”）</li>
+<li>TTC算法和延迟接受算法都可以用在学校匹配上，以帕累托改进作为标准两个算法难分伯仲，加上“人气高的学校得到排名更靠前的学生”这个标准，帕累托算法更合适。</li>
+</ul>
+
+<h2 id="toc_4">三、拍卖问题</h2>
+
+<p>采用何种拍卖方式，才能使标的物的经济价值显现出来，那种拍卖对卖方更有利，以及背后的理论支撑。</p>
+
+<ul>
+<li>从买方角度，增价拍卖和第二价格拍卖、降价拍卖和第一价格拍卖是「策略等价」的。<br/></li>
+<li>从卖方角度，第一价格和第二价格拍卖中的期望收益是一致的（惊讶），「收益等价定理」证明。意味着卖家不需要从收益角度考虑采用第一价格还是第二价格拍卖，因两者的期望收益相同。只需考虑其他条件，比如防策略性。</li>
+<li>第二价格 vs 增量拍卖</li>
+<li><code>「收益等价定理」只在单个商品的拍卖中有效，对于出售多单位同种商品无效，例如国债</code></li>
+<li>对卖家期望收益最大化称为「最优拍卖」，比如在第二价格拍卖中通过计算设定底价。</li>
+<li>私人价值，共同价值，关联价值</li>
+<li>市场设计的特征在于制定规则，而不是结果。反例，计划经济</li>
+</ul>
+
+<h3 id="toc_5">公开式</h3>
+
+<ul>
+<li><p>增价拍卖</p>
+
+<ul>
+<li>从最低价格加价，买房不想出更高价格时退出，当只剩一个买家时结束。</li>
+</ul></li>
+<li><p>降价拍卖</p>
+
+<ul>
+<li>从高价起拍，价格不断下降，直到某个买家说“我要买”时，拍卖结束。 </li>
+</ul></li>
+</ul>
+
+<h3 id="toc_6">密封式</h3>
+
+<p>买家把出价金额写在信封里交给主办者，一旦提交不能变更。</p>
+
+<ul>
+<li>第一价格拍卖<br/>
+
+<ul>
+<li>获胜者支付自己出价的金额——最高出价金额</li>
+<li>结果强烈依赖彼此之间的预测，结果容易被运气操纵，很难公正</li>
+</ul></li>
+<li>第二价格拍卖<br/>
+
+<ul>
+<li>获胜者支付出价第二高的金额</li>
+<li>参与者按照自己的评估值出价就是「占优策略」<br/>
+低于评估价，导致失败可能性增加，而支付金额并不会减少。<br/>
+高于评估价，本应失败的却获胜了，需支付高于自己评估价的金额。<br/></li>
+<li>所以，满足防策略性<br/></li>
+<li>“第二价格”并不低，这个金额是“失败者所报出的最高评价值”，高到所有失败者都不会支付“更高的金额”</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_7">多单位同质商品拍卖</h3>
+
+<ul>
+<li>收益等价定理成立的情况及其有限，几乎没有意义</li>
+<li>采用诸如<code>最高失败价格拍卖</code>、<code>价格歧视拍卖</code>、<code>修正最高失败价格拍卖</code>、<code>维克里拍卖</code>等，之外还要综合考虑其他因素，论证略显复杂，不在此阐述。</li>
 </ul>
 
 			            <p>
-			            本文永久链接: <a href="14853486232734.html">http://jenwang.me/14853486232734.html</a>
+			            本文永久链接: <a href="14861916870975.html">http://jenwang.me/14861916870975.html</a>
 			            <hr>
 			            <!-- add by jenwang -->
 			  			<I>进一步交流：<br>
