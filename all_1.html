@@ -74,6 +74,60 @@
         <div class="col-sm-8 blog-main">
 			
 					<div class="blog-post">
+			            <h2 class="blog-post-title"><a href="14853486231882.html" style="color:#444444;">Leiningen的profiles.clj不生效？</a></h2>
+			            <p class="blog-post-meta">2013/7/16 
+				            &nbsp;posted in 
+							
+							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							 
+							 
+			            </p>
+			            <div class="content-responsive">
+			            <p>需求:<br/><br/>
+比如要自定义本地maven库的路径，又不想在project.clj中定义，因为每个人的本地路径不同，写在工程中不好。那么在profiles.clj中定义比较好：</p>
+
+<pre><code>{:user {:local-repo &quot;D:\\m2\\repository&quot;}}
+</code></pre>
+
+<p>当庆幸找到解决方法时，一运行发现根本没生效是件很扫兴的事。<br/>
+网上能找到的资料都告诉你profiles.clj这个文件是放在~/.lein/这个目录下的。</p>
+
+<p><strong>实际情况是：</strong> <br/>
+<code>如果自定义了LEIN_HOME的路径，那么profiles.clj就应该放在LEIN_HOME目录下，而不是~/.lein/下</code><br/><br/>
+否则不会生效，切记。 </p>
+
+
+
+						
+			           </div>
+			          </div><!-- /.blog-post -->
+			 
+					<div class="blog-post">
+			            <h2 class="blog-post-title"><a href="14853486231695.html" style="color:#444444;">避免jar依赖冲突的一种办法</a></h2>
+			            <p class="blog-post-meta">2013/7/12 
+				            &nbsp;posted in 
+							
+							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							 
+							 
+			            </p>
+			            <div class="content-responsive">
+			            <p>java中的依赖冲突问题一直比较头疼，特别是做公用包给其他系统用的时候，现在都不敢引入太多的依赖，基本上每次都要帮别人解决依赖冲突的问题，非常麻烦。  </p>
+
+<p>特别是碰到一些老系统还不是用maven管理的，人家用你的一个功能还要拷一堆jar包过去，然后排出哪些包在系统中已经有了，版本是否兼容等问题，非常蛋疼。为了方便人家使用就想把所有依赖打成一个jar包提供出去，但这样潜在的依赖冲突问题就会更严重，以后出现冲突时都不知道哪个jar包含了冲突的类。  </p>
+
+<p>更不想引入OSGi这种重量级的东西来隔离依赖。  </p>
+
+
+
+
+						 
+						<a href="14853486231695.html" class="more-link">继续阅读 &rarr;</a>
+			    		
+			           </div>
+			          </div><!-- /.blog-post -->
+			 
+					<div class="blog-post">
 			            <h2 class="blog-post-title"><a href="14853486231532.html" style="color:#444444;">关于Java Microbenchmark的一点记录</a></h2>
 			            <p class="blog-post-meta">2013/7/11 
 				            &nbsp;posted in 
@@ -238,44 +292,6 @@
 			    		
 			           </div>
 			          </div><!-- /.blog-post -->
-			 
-					<div class="blog-post">
-			            <h2 class="blog-post-title"><a href="14853499456673.html" style="color:#444444;">title: "关于BeanUtils拷贝null属性的问题"</a></h2>
-			            <p class="blog-post-meta">2011/4/14 
-				            &nbsp;posted in 
-							
-							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
-							 
-							 
-			            </p>
-			            <div class="content-responsive">
-			            
-
-
-						 
-						<a href="14853499456673.html" class="more-link">继续阅读 &rarr;</a>
-			    		
-			           </div>
-			          </div><!-- /.blog-post -->
-			 
-					<div class="blog-post">
-			            <h2 class="blog-post-title"><a href="14853499459066.html" style="color:#444444;">title: "hadoop单元测试方法--使用和增强</a></h2>
-			            <p class="blog-post-meta">2011/4/14 
-				            &nbsp;posted in 
-							
-							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
-							 
-							 
-			            </p>
-			            <div class="content-responsive">
-			            
-
-
-						 
-						<a href="14853499459066.html" class="more-link">继续阅读 &rarr;</a>
-			    		
-			           </div>
-			          </div><!-- /.blog-post -->
 			  
 
 
@@ -319,7 +335,7 @@
 	  
             <ol class="list-unstyled">
 	      <li class="post">
-	        <a href="%E8%AE%AE%E8%AE%BA.html">议论&nbsp;(1)</a>
+	        <a href="%E8%AE%AE%E8%AE%BA.html">议论&nbsp;(2)</a>
 	        
 	        
 	        
@@ -327,7 +343,7 @@
 	  
             <ol class="list-unstyled">
 	      <li class="post">
-	        <a href="%E8%AF%BB%E4%B9%A6.html">读书&nbsp;(2)</a>
+	        <a href="%E8%AF%BB%E4%B9%A6.html">读书&nbsp;(3)</a>
 	        
 	        
 	        
@@ -339,6 +355,18 @@
           <div class="sidebar-module">
             <h4>最近文章</h4>
             
+	  
+	      
+		      
+		        <a href="14813423363424.html">新时代职业个性</a><br />
+		      
+	     
+	  
+	      
+		      
+		        <a href="14713174053385.html">重新定义管理 —— 笔记</a><br />
+		      
+	     
 	  
 	      
 		      
@@ -385,18 +413,6 @@
 	      
 		      
 		        <a href="14853486232080.html">一个java内存泄漏的排查案例</a><br />
-		      
-	     
-	  
-	      
-		      
-		        <a href="14853486231882.html">Leiningen的profiles.clj不生效？</a><br />
-		      
-	     
-	  
-	      
-		      
-		        <a href="14853486231695.html">避免jar依赖冲突的一种办法</a><br />
 		      
 	     
 	  
