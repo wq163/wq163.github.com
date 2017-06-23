@@ -8,7 +8,7 @@
     <link href="atom.xml" rel="alternate" title="jenwang的随想" type="application/atom+xml">
     <title> 
 	  
-  	title: "淘宝消息中间件Metamorphosis开源" - jenwang的随想
+  	SSH 隧道实现内网穿透 - jenwang的随想
   	
   	</title>
     <link href="asset/css/bootstrap.min.css" rel="stylesheet">
@@ -74,8 +74,8 @@
         <div class="col-sm-8 blog-main">
 			
 					<div class="blog-post">
-			            <h2 class="blog-post-title">title: "淘宝消息中间件Metamorphosis开源"</h2>
-			            <p class="blog-post-meta">2011/4/14 
+			            <h2 class="blog-post-title">SSH 隧道实现内网穿透</h2>
+			            <p class="blog-post-meta">2017/6/23 
 				            &nbsp;posted in 
 							
 							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
@@ -83,10 +83,23 @@
 							 
 			            </p>
 			            <div class="content-responsive">
-			            <p><img src="media/14853499458621/meta.jpg" alt="meta"/></p>
+			            <p>家里买了台 NETGEAR 路由器刷了梅林固件，可以在 USB 接口上挂个存储当 NAS 用，发现家里的移动宽带是没有公网 ip 的，于是在外网访问不到内网，ddns 也没法用了（不要给我推荐花生壳内网版😝）。那么，需求就是如何让外网访问到内网ip。</p>
+
+<p>于是想到了从内网到公网上的某台机器建立一条 ssh 隧道，通过访问公网机器把数据穿透到内网，实现方法：<br/>
+在内网 10.96.x.x 上执行 <code>ssh -N -f -R 8088:10.96.x.x:443 root@167.88.x.x -b 0.0.0.0 &quot;vmstat 30&quot;</code><br/>
+让外网可以通过公网的 167.88.x.x:8088 访问到内网10.96.x.x:443</p>
+
+<blockquote>
+<p>备注：167.88.x.x上需要在 <code>/etc/sshd/sshd_config</code> 中修改 <code>GatewayPorts no</code> 为 <code>GatewayPorts yes</code> ,<br/>
+否则 8088 端口是绑定在 127.0.0.1 上的，只有本机能访问。</p>
+</blockquote>
+
+<hr/>
+
+<p>群晖的 quickconnect，以及内网版的 ddns 原理应该都类似，实现方式可能有所不同。这种可用性关键在于公网中转服务器的网速和通道的稳定性。</p>
 
 			            <p>
-			            本文永久链接: <a href="14853499458621.html">http://jenwang.me/14853499458621.html</a>
+			            本文永久链接: <a href="14982038982873.html">http://jenwang.me/14982038982873.html</a>
 			            <hr>
 			            <!-- add by jenwang -->
 			  			<I>进一步交流：<br>
