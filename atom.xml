@@ -4,7 +4,7 @@
   <title><![CDATA[jenwang的随想]]></title>
   <link href="http://jenwang.me/atom.xml" rel="self"/>
   <link href="http://jenwang.me/"/>
-  <updated>2017-07-06T21:04:47+08:00</updated>
+  <updated>2020-08-07T14:41:51+08:00</updated>
   <id>http://jenwang.me/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -12,6 +12,164 @@
   </author>
   <generator uri="http://jenwang.me/">jenwang</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Flowable怎么通过委托表达式获取到Micronaut的bean]]></title>
+    <link href="http://jenwang.me/15967788014795.html"/>
+    <updated>2020-08-07T13:40:01+08:00</updated>
+    <id>http://jenwang.me/15967788014795.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">flowable Unknown property used in expression: ${testListener}</h2>
+
+<p>众所周知在spring中工作流引擎activiti/flowable是可以通过委托表达式获取到spring bean的。但在micronaut中会报这个异常，因为activiti/flowable官方已经集成好了spring，而micronaut并没有人帮你集成过，获取不到容器里的bean是理所当然的。</p>
+
+<p>由于micronaut是个新框架，网上翻了一圈都没找到对路的文章，以及在micronaut中怎么解决。</p>
+
+<p>无奈之下自能自己出手了，翻了翻flowable的源码，找到跟spring集成部分的代码，理解了一下，模仿着写了一个针对micronaut的简单集成，打通flowable和micronaut容器，经过一番调试之后问题解决。</p>
+
+<hr/>
+
+<p>在给任务节点设置监听器，运行到这个节点时会出现这个异常<code>flowable Unknown property used in expression: ${testListener}</code>，监听器的设置如下图所示，设置了委托表达式delegateExpression，本意是想获取一个bean作为监听器。<br/>
+<img src="media/15967788014795/15967792583768.jpg" alt=""/></p>
+
+<p>对应的xml为：</p>
+
+<pre><code>&lt;userTask id=&quot;task1&quot; name=&quot;task1&quot; flowable:formFieldValidation=&quot;true&quot;&gt;
+    &lt;extensionElements&gt;
+        &lt;flowable:taskListener event=&quot;complete&quot; delegateExpression=&quot;${billGenerateListener}&quot;&gt;
+        &lt;/flowable:taskListener&gt;
+    &lt;/extensionElements&gt;
+&lt;/userTask&gt;
+</code></pre>
+
+<p>监听器代码如下：</p>
+
+<pre><code>@Context
+@Named(&quot;billGenerateListener&quot;)//监听器名称，跟委托表达式里的设置对应
+public class BillGenerateTaskListener implements TaskListener {
+
+    @Override
+    public void notify(final DelegateTask delegateTask) {
+        delegateTask.getTaskDefinitionKey();
+        final Map&lt;String, Object&gt; variables = delegateTask.getVariables();
+        final Object costPrice = variables.get(&quot;costPrice&quot;);
+        log.warn(&quot;Generate Bill...&quot;);
+        log.warn(&quot;costPrice:{}&quot;,costPrice);
+    }
+}
+</code></pre>
+
+<p>下面直接看怎么解决的吧，不扯什么工作原理、底层机制，我们只是为了解决问题，直接抄了能用最好！</p>
+
+<p>我们知道flowable引擎对象<code>ProcessEngine</code>一般是通过<code>ProcessEngineConfiguration#buildProcessEngine()</code>创建的，这是使用引擎的入口。<br/><br/>
+那么需要在<code>ProcessEngineConfiguration</code>中设置一个自己扩展的<code>ProcessExpressionManager</code></p>
+
+<pre><code>cfg.setExpressionManager(
+                new MicronautExpressionManager(applicationContext, cfg.getBeans()));
+</code></pre>
+
+<p>MicronautExpressionManager:</p>
+
+<pre><code>public class MicronautExpressionManager extends ProcessExpressionManager {
+    protected ApplicationContext applicationContext;//micronaut的context
+    
+    public MicronautExpressionManager(ApplicationContext applicationContext, Map&lt;Object, Object&gt; beans) {
+        super(beans);
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    protected ELResolver createElResolver(VariableContainer variableContainer) {
+        CompositeELResolver compositeElResolver = new CompositeELResolver();
+        compositeElResolver.add(createVariableElResolver(variableContainer));
+
+        compositeElResolver.add(createMicronautElResolver());//主要是这里
+        compositeElResolver.add(new ArrayELResolver());
+        compositeElResolver.add(new ListELResolver());
+        compositeElResolver.add(new MapELResolver());
+        compositeElResolver.add(new JsonNodeELResolver());
+        compositeElResolver.add(new BeanELResolver());
+        compositeElResolver.add(new CouldNotResolvePropertyELResolver());
+        return compositeElResolver;
+    }
+
+    protected ELResolver createMicronautElResolver() {
+        if (beans != null) {
+            return new ReadOnlyMapELResolver(beans);
+        } else {
+            // 还有这里，在表达式中暴露 application-context
+            return new MicronautApplicationContextElResolver(applicationContext);
+        }
+    }
+}
+</code></pre>
+
+<p>再看下MicronautApplicationContextElResolver：</p>
+
+<pre><code>public class MicronautApplicationContextElResolver extends ELResolver {
+    protected ApplicationContext applicationContext;
+
+    public MicronautApplicationContextElResolver(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
+    //主要就是这里通过bean名称获取micronaut的bean
+    @Override
+    public Object getValue(ELContext context, Object base, Object property) {
+        if (base == null) {
+            String key = (String) property;
+
+            final Object o = applicationContext.getBean( Object.class, Qualifiers.byName(key));
+            if (o!=null) {
+                context.setPropertyResolved(true);
+                return o;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isReadOnly(ELContext context, Object base, Object property) {
+        return true;
+    }
+
+    @Override
+    public void setValue(ELContext context, Object base, Object property, Object value) {
+        if (base == null) {
+            String key = (String) property;
+            final Object o = applicationContext.getBean( Object.class, Qualifiers.byName(key));
+            if (o!=null) {
+                throw new FlowableException(&quot;Cannot set value of &#39;&quot; + property + &quot;&#39;, it resolves to a bean defined in the micronaut application-context.&quot;);
+            }
+        }
+    }
+
+    @Override
+    public Class&lt;?&gt; getCommonPropertyType(ELContext context, Object arg) {
+        return Object.class;
+    }
+
+    @Override
+    public Iterator&lt;FeatureDescriptor&gt; getFeatureDescriptors(ELContext context, Object arg) {
+        return null;
+    }
+
+    @Override
+    public Class&lt;?&gt; getType(ELContext context, Object arg1, Object arg2) {
+        return Object.class;
+    }
+}
+</code></pre>
+
+<p>好了，抄完作业就阔以了。</p>
+
+<p>原文发表于<a href="http://jenwang.me">http://jenwang.me</a></p>
+
+<p>更多交流请关注公众号：<br/>
+<img src="media/15967788014795/15967820787386.jpg" alt="-h200"/><img src="media/15967788014795/15967823434803.jpg" alt="" style="width:300px;"/></p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[[读书笔记]旅行的艺术]]></title>
@@ -1117,7 +1275,7 @@ bundle install
 <li>写文章</li>
 </ul>
 
-<p>rake new_post[&ldquo;title&rdquo;]，会创建一个新的Post，新文件在source/_post下，文件名如下面的格式:2012-07-31-title.markdown。该文件可以直接打开修改。</p>
+<p>rake new_post[&quot;title&quot;]，会创建一个新的Post，新文件在source/_post下，文件名如下面的格式:2012-07-31-title.markdown。该文件可以直接打开修改。</p>
 
 <ul>
 <li>预览效果
@@ -1163,42 +1321,6 @@ system &quot;echo &#39;My Octopress Page is coming soon ^&amp;hellip;&#39; &gt; 
 <p><code>rake setup_github_pages</code>命令最后出现<code>Now you can deploy to xxxxxxx with rake deploy</code>, 就表示成功.</p>
 
 <p>另外文章的文件格式一定要转化一下（环境变量LANG指定的格式），不然生成会出错</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[hbase启动问题记录]]></title>
-    <link href="http://jenwang.me/14853486231037.html"/>
-    <updated>2017-01-25T20:50:23+08:00</updated>
-    <id>http://jenwang.me/14853486231037.html</id>
-    <content type="html"><![CDATA[
-<p>昨天测试环境的Hbase启动有问题,日志中显示:<br/>
-<code>transaction type: 1 error: KeeperErrorCode = NoNode for /hbase</code></p>
-
-<span id="more"></span><!-- more -->
-
-<p>hmaster等其他进程日志中显示连接不上zookeeper，发现zookeeper启动有问题。</p>
-
-<p>于是判断可能是<code>zookeeper</code>中的某些数据丢失了，之前也出现过类似的启动问题，都是清除zookeeper所有数据解决的，这显然不能根本上解决问题。</p>
-
-<p>进一步分析和判断想到hbase的数据目录，由于商测环境是用伪分布式的方式部署的，zookeeper集成在hbase里管理，所以zookeeper的数据也在hbase的临时数据目录下。hbase的临时目录默认是放在/tmp的，而linux的/tmp目录是会被定期清理的(参考linux系统的tmpwatch)。到此问题已基本定位清楚了，修改hbase的临时目录位置，问题解决。</p>
-
-<ul>
-<li>hbase.rootdir</li>
-</ul>
-
-<p>这个目录是region  server的共享目录，用来持久化Hbase。URL需要是&#39;完全正确&#39;的，还要包含文件系统的scheme。例如，要表示hdfs中的 &lsquo;/hbase&#39;目录，namenode  运行在<code>namenode.example.org</code>的<code>9090</code>端口。则需要设置为<code>hdfs:~/~/namenode.example.org:9000 /hbase</code>。默认情况下Hbase是写到<code>/tmp</code>的。不改这个配置，数据会丢失。     </p>
-
-<p>默认: <code>file:~/~//tmp/hbase-${user.name}/hbase</code></p>
-
-<p>hbase.tmp.dir</p>
-
-<p>本地文件系统的临时文件夹。可以修改到一个更为持久的目录上。(/tmp会清除)     </p>
-
-<p>默认: <code>/tmp/hbase-${user.name}</code></p>
-
-<p><strong>这两点是hadoop/hbase系统部署和运维要重点注意的事项</strong></p>
 
 ]]></content>
   </entry>

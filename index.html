@@ -74,6 +74,171 @@
         <div class="col-sm-8 blog-main">
 			
 					<div class="blog-post">
+			            <h2 class="blog-post-title"><a href="15967788014795.html" style="color:#444444;">Flowable怎么通过委托表达式获取到Micronaut的bean</a></h2>
+			            <p class="blog-post-meta">2020/8/7 
+				            &nbsp;posted in 
+							
+							    <a class='category' href='%E6%8A%80%E6%9C%AF.html'>技术</a>&nbsp;
+							 
+							 
+			            </p>
+			            <div class="content-responsive">
+			            <h2 id="toc_0">flowable Unknown property used in expression: ${testListener}</h2>
+
+<p>众所周知在spring中工作流引擎activiti/flowable是可以通过委托表达式获取到spring bean的。但在micronaut中会报这个异常，因为activiti/flowable官方已经集成好了spring，而micronaut并没有人帮你集成过，获取不到容器里的bean是理所当然的。</p>
+
+<p>由于micronaut是个新框架，网上翻了一圈都没找到对路的文章，以及在micronaut中怎么解决。</p>
+
+<p>无奈之下自能自己出手了，翻了翻flowable的源码，找到跟spring集成部分的代码，理解了一下，模仿着写了一个针对micronaut的简单集成，打通flowable和micronaut容器，经过一番调试之后问题解决。</p>
+
+<hr/>
+
+<p>在给任务节点设置监听器，运行到这个节点时会出现这个异常<code>flowable Unknown property used in expression: ${testListener}</code>，监听器的设置如下图所示，设置了委托表达式delegateExpression，本意是想获取一个bean作为监听器。<br/>
+<img src="media/15967788014795/15967792583768.jpg" alt=""/></p>
+
+<p>对应的xml为：</p>
+
+<pre><code>&lt;userTask id=&quot;task1&quot; name=&quot;task1&quot; flowable:formFieldValidation=&quot;true&quot;&gt;
+    &lt;extensionElements&gt;
+        &lt;flowable:taskListener event=&quot;complete&quot; delegateExpression=&quot;${billGenerateListener}&quot;&gt;
+        &lt;/flowable:taskListener&gt;
+    &lt;/extensionElements&gt;
+&lt;/userTask&gt;
+</code></pre>
+
+<p>监听器代码如下：</p>
+
+<pre><code>@Context
+@Named(&quot;billGenerateListener&quot;)//监听器名称，跟委托表达式里的设置对应
+public class BillGenerateTaskListener implements TaskListener {
+
+    @Override
+    public void notify(final DelegateTask delegateTask) {
+        delegateTask.getTaskDefinitionKey();
+        final Map&lt;String, Object&gt; variables = delegateTask.getVariables();
+        final Object costPrice = variables.get(&quot;costPrice&quot;);
+        log.warn(&quot;Generate Bill...&quot;);
+        log.warn(&quot;costPrice:{}&quot;,costPrice);
+    }
+}
+</code></pre>
+
+<p>下面直接看怎么解决的吧，不扯什么工作原理、底层机制，我们只是为了解决问题，直接抄了能用最好！</p>
+
+<p>我们知道flowable引擎对象<code>ProcessEngine</code>一般是通过<code>ProcessEngineConfiguration#buildProcessEngine()</code>创建的，这是使用引擎的入口。<br/><br/>
+那么需要在<code>ProcessEngineConfiguration</code>中设置一个自己扩展的<code>ProcessExpressionManager</code></p>
+
+<pre><code>cfg.setExpressionManager(
+                new MicronautExpressionManager(applicationContext, cfg.getBeans()));
+</code></pre>
+
+<p>MicronautExpressionManager:</p>
+
+<pre><code>public class MicronautExpressionManager extends ProcessExpressionManager {
+    protected ApplicationContext applicationContext;//micronaut的context
+    
+    public MicronautExpressionManager(ApplicationContext applicationContext, Map&lt;Object, Object&gt; beans) {
+        super(beans);
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    protected ELResolver createElResolver(VariableContainer variableContainer) {
+        CompositeELResolver compositeElResolver = new CompositeELResolver();
+        compositeElResolver.add(createVariableElResolver(variableContainer));
+
+        compositeElResolver.add(createMicronautElResolver());//主要是这里
+        compositeElResolver.add(new ArrayELResolver());
+        compositeElResolver.add(new ListELResolver());
+        compositeElResolver.add(new MapELResolver());
+        compositeElResolver.add(new JsonNodeELResolver());
+        compositeElResolver.add(new BeanELResolver());
+        compositeElResolver.add(new CouldNotResolvePropertyELResolver());
+        return compositeElResolver;
+    }
+
+    protected ELResolver createMicronautElResolver() {
+        if (beans != null) {
+            return new ReadOnlyMapELResolver(beans);
+        } else {
+            // 还有这里，在表达式中暴露 application-context
+            return new MicronautApplicationContextElResolver(applicationContext);
+        }
+    }
+}
+</code></pre>
+
+<p>再看下MicronautApplicationContextElResolver：</p>
+
+<pre><code>public class MicronautApplicationContextElResolver extends ELResolver {
+    protected ApplicationContext applicationContext;
+
+    public MicronautApplicationContextElResolver(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
+    //主要就是这里通过bean名称获取micronaut的bean
+    @Override
+    public Object getValue(ELContext context, Object base, Object property) {
+        if (base == null) {
+            String key = (String) property;
+
+            final Object o = applicationContext.getBean( Object.class, Qualifiers.byName(key));
+            if (o!=null) {
+                context.setPropertyResolved(true);
+                return o;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isReadOnly(ELContext context, Object base, Object property) {
+        return true;
+    }
+
+    @Override
+    public void setValue(ELContext context, Object base, Object property, Object value) {
+        if (base == null) {
+            String key = (String) property;
+            final Object o = applicationContext.getBean( Object.class, Qualifiers.byName(key));
+            if (o!=null) {
+                throw new FlowableException(&quot;Cannot set value of &#39;&quot; + property + &quot;&#39;, it resolves to a bean defined in the micronaut application-context.&quot;);
+            }
+        }
+    }
+
+    @Override
+    public Class&lt;?&gt; getCommonPropertyType(ELContext context, Object arg) {
+        return Object.class;
+    }
+
+    @Override
+    public Iterator&lt;FeatureDescriptor&gt; getFeatureDescriptors(ELContext context, Object arg) {
+        return null;
+    }
+
+    @Override
+    public Class&lt;?&gt; getType(ELContext context, Object arg1, Object arg2) {
+        return Object.class;
+    }
+}
+</code></pre>
+
+<p>好了，抄完作业就阔以了。</p>
+
+<p>原文发表于<a href="http://jenwang.me">http://jenwang.me</a></p>
+
+<p>更多交流请关注公众号：<br/>
+<img src="media/15967788014795/15967820787386.jpg" alt="-h200"/><img src="media/15967788014795/15967823434803.jpg" alt="" style="width:300px;"/></p>
+
+
+
+						
+			           </div>
+			          </div><!-- /.blog-post -->
+			 
+					<div class="blog-post">
 			            <h2 class="blog-post-title"><a href="14990925690611.html" style="color:#444444;">[读书笔记]旅行的艺术</a></h2>
 			            <p class="blog-post-meta">2017/7/3 
 				            &nbsp;posted in 
@@ -303,29 +468,6 @@
 			    		
 			           </div>
 			          </div><!-- /.blog-post -->
-			 
-					<div class="blog-post">
-			            <h2 class="blog-post-title"><a href="14850506793674.html" style="color:#444444;">如何评价一个清闲的管理者</a></h2>
-			            <p class="blog-post-meta">2017/1/20 
-				            &nbsp;posted in 
-							
-							    <a class='category' href='%E8%AE%AE%E8%AE%BA.html'>议论</a>&nbsp;
-							 
-							 
-			            </p>
-			            <div class="content-responsive">
-			            <p>比如一个部门负责人看上去很「清闲」好不好？这个问题我认为不能从是否「清闲」来判断一个管理者，所谓善战者无赫赫之功也是极有可能的，重点在于他的团队氛围、工作效率如何。</p>
-
-<p>假如管理者带来的影响是负面的，那么忙碌起来并没有意义，甚至还不如什么也不做，遗憾的是很大比例的管理者并不这么做，甚至知道也不能这么做，忙碌本身已经成为政治正确，不管事情真正的意义和价值。</p>
-
-
-
-
-						 
-						<a href="14850506793674.html" class="more-link">继续阅读 &rarr;</a>
-			    		
-			           </div>
-			          </div><!-- /.blog-post -->
 			  
 
 
@@ -361,7 +503,7 @@
             
             <ol class="list-unstyled">
 	      <li class="post">
-	        <a href="%E6%8A%80%E6%9C%AF.html">技术&nbsp;(26)</a>
+	        <a href="%E6%8A%80%E6%9C%AF.html">技术&nbsp;(27)</a>
 	        
 	        
 	        
@@ -397,6 +539,12 @@
           <div class="sidebar-module">
             <h4>最近文章</h4>
             
+	  
+	      
+		      
+		        <a href="15967788014795.html">Flowable怎么通过委托表达式获取到Micronaut的bean</a><br />
+		      
+	     
 	  
 	      
 		      
@@ -449,12 +597,6 @@
 	      
 		      
 		        <a href="14851540366764.html">我和工具</a><br />
-		      
-	     
-	  
-	      
-		      
-		        <a href="14850506793674.html">如何评价一个清闲的管理者</a><br />
 		      
 	     
 	  
